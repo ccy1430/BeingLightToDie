@@ -69,3 +69,7 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+/Assets/PSD/杂念.psd
+/Assets/PSD/未标题-1.psd
+/Assets/PSD/未标题-1.psd.meta
+/Assets/PSD/杂念.psd.meta
