@@ -55,6 +55,17 @@ public class Level_Swear_Pledge : MonoBehaviour
             gameObject.SetActive(false);
         }
     }
+
+#if UNITY_EDITOR
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            progress = 100;
+        }
+    }
+#endif
+
     private Coroutine cor1, cor2, cor3;
 
     public void CollEmo(Level_Swear_Emotion emo)

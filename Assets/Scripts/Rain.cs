@@ -40,6 +40,7 @@ public class Rain : MonoBehaviour
 
     private void BeginRain()
     {
+        CancelInvoke(nameof(CreatRainDrop));
         InvokeRepeating(nameof(CreatRainDrop), 0, inter);
     }
     private void EndRain()

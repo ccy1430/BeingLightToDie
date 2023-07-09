@@ -2591,15 +2591,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyColl: {fileID: 374242584}
-  originPos: {x: -9.5, y: 0, z: 0}
+  originPos: {x: -14.5, y: -4.5, z: 0}
   selfPosTileBase: {fileID: 11400000, guid: d89b379d453e16246b0d344573a765de, type: 2}
-  speed_limit_l: {x: -4, y: -8}
-  speed_limit_r: {x: 4, y: 6}
-  jumpframe_max: 30
-  jumpframe_min: 15
+  speed_limit_l: {x: -4.5, y: -10}
+  speed_limit_r: {x: 4.5, y: 9}
+  jumpframe_max: 24
+  jumpframe_min: 12
   speed_hor_acce: 0.5
   speed_hor_acce2: 1
-  speed_ver_acce: 0.8
+  speed_ver_acce: 1.5
   self_collider: {fileID: 374242584}
   collLayer:
     serializedVersion: 2
@@ -5431,7 +5431,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1977406120
 MonoBehaviour:
   m_ObjectHideFlags: 0
