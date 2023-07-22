@@ -7,7 +7,9 @@ public class AllLights : MonoBehaviour
 {
     public GameObject lightPrefab;
     private Queue<GameObject> lightQueue = new Queue<GameObject>(256);
-    private Dictionary<Transform, PathData> dic_LightsAndPaths = new Dictionary<Transform, PathData>(16);
+    private List<Light2D> lights = new List<Light2D>();
+    private List<PathData> paths = new List<PathData>();
+
     private int fixedIndex = 0;
     private GenericPool<PathData> pathDataPool;
     private void Awake()
@@ -33,6 +35,14 @@ public class AllLights : MonoBehaviour
 
     public void SetLight(PathData path)
     {
+        if (SaveData.Data.rememerCount == 0) return;
+        if (lights.Count == SaveData.Data.rememerCount)
+        {
+            lightQueue.Enqueue(lights[0].gameObject);
+            lights.RemoveAt(0);
+            pathDataPool.EnPool(paths[0]);
+            paths.RemoveAt(0);
+        }
         GameObject light;
         if (lightQueue.Count == 0)
         {
@@ -43,18 +53,19 @@ public class AllLights : MonoBehaviour
             light = lightQueue.Dequeue();
         }
         light.SetActive(true);
-        dic_LightsAndPaths.Add(light.transform, path);
+        lights.Add(light.GetComponent<Light2D>());
+        paths.Add(path);
         ReplayAllLight();
         GenericMsg.Trigger(GenericSign.startLevel);
     }
     private void FixedUpdate()
     {
-        foreach (var item in dic_LightsAndPaths)
+        for (int i = 0; i < paths.Count; i++)
         {
-            item.Key.position += (Vector3)item.Value.GetSpeedByTime(fixedIndex);
-            if (item.Value.point >= item.Value.timestamp.Count)
+            lights[i].transform.position += (Vector3)paths[i].GetSpeedByTime(fixedIndex);
+            if (paths[i].point >= paths[i].timestamp.Count)
             {
-                GameTool.CloseLight(item.Key.GetComponent<Light2D>());
+                GameTool.CloseLight(lights[i]);
             }
         }
         fixedIndex++;
@@ -63,11 +74,11 @@ public class AllLights : MonoBehaviour
     {
         fixedIndex = 0;
         Vector3 pos = GameManager.Instance.player.originPos;
-        foreach (var item in dic_LightsAndPaths)
+        for (int i = 0; i < paths.Count; i++)
         {
-            item.Value.ResetPoint();
-            item.Key.position = pos;
-            GameTool.OpenLight(item.Key.GetComponent<Light2D>());
+            paths[i].ResetPoint();
+            lights[i].transform.position = pos;
+            GameTool.OpenLight(lights[i]);
         }
     }
     public void RecyleLights()
@@ -87,11 +98,11 @@ public class AllLights : MonoBehaviour
         }
         if (pathDataPool != null)
         {
-            foreach (var item in dic_LightsAndPaths)
+            foreach (var item in paths)
             {
-                pathDataPool.EnPool(item.Value);
+                pathDataPool.EnPool(item);
             }
         }
-        dic_LightsAndPaths.Clear();
+        paths.Clear();
     }
 }

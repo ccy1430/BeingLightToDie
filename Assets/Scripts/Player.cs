@@ -25,10 +25,10 @@ public partial class Player : MonoBehaviour
     [Space]
     public TileBase selfPosTileBase;
 
+    private const float lightBaseSize = 1.5f;
     private void Awake()
     {
         light2d = GetComponentInChildren<UnityEngine.Rendering.Universal.Light2D>();
-        light2dRange = light2d.pointLightOuterRadius;
         self_anim = GetComponent<Animator>();
         self_sp = GetComponent<SpriteRenderer>();
         self_rb2d = GetComponent<Rigidbody2D>();
@@ -100,6 +100,7 @@ public partial class Player : MonoBehaviour
     private void StartLevel()
     {
         transform.position = originPos;
+        light2dRange = SaveData.Data.playerLightSize * lightBaseSize;
         Lighting(ResumeIdle);
         ResetAction();
         ResetAnim();
@@ -132,6 +133,7 @@ public partial class Player : MonoBehaviour
 
     public void DieOnce()
     {
+        if (self_state != PlayerState.idle) return;
         self_state = PlayerState.die;
         ResetAction();
         cachePath.TryAddSpeed(fixedTime, Vector3.zero);
@@ -157,7 +159,10 @@ public partial class Player : MonoBehaviour
     {
         if (coll.CompareTag("Trap"))
         {
-            DieOnce();
+            if (SaveData.Data.hadHurt)
+            {
+                DieOnce();
+            }
         }
         else if (coll.CompareTag("You"))
         {

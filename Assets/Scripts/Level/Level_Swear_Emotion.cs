@@ -4,8 +4,12 @@ using UnityEngine;
 
 public class Level_Swear_Emotion : MonoBehaviour
 {
+    private const float rectW = GameConfig.mapWidth / 2f + 1;
+    private const float rectH = GameConfig.mapHeight / 2f + 1;
+
     public SpriteRenderer sprr;
     public Sprite[] sprites;
+    public float speedAcce;
 
     private Level_Swear_Pledge pledge;
     private GenericPool<GameObject> belongPool;
@@ -14,8 +18,6 @@ public class Level_Swear_Emotion : MonoBehaviour
     private Vector3 dir;
     private float moveSpeed;
 
-    private const float rectW = GameConfig.mapWidth / 2f + 1;
-    private const float rectH = GameConfig.mapHeight / 2f + 1;
 
     public void Init(Level_Swear_Pledge pledge, GenericPool<GameObject> belongPool)
     {
@@ -30,23 +32,24 @@ public class Level_Swear_Emotion : MonoBehaviour
     }
     private void Init()
     {
-        //todo 重置状态 挑选位置 根据关卡进度决定速度
         moveSpeed = 1;
         selfIndex = Random.Range(0, sprites.Length);
         sprr.sprite = sprites[selfIndex];
         //随机取一个角度 形成射线 反算轨迹
-        var angle = Random.Range(0, 360);
+        var angle = Random.Range(-30, 90);
+        if (angle > 30) angle += 120;
         transform.localRotation = Quaternion.Euler(0, 0, angle);
         Vector2 v2 = Quaternion.Euler(0, 0, angle) * Vector3.right;
         var pos = pledge.transform.position;
+        moveSpeed += speedAcce * SaveData.Data.levelIndex / 100f;
         switch (selfIndex)
         {
             case 0:
-                moveSpeed += SaveData.Data.levelIndex / 100f;break;
+                moveSpeed += SaveData.Data.levelIndex / 100f; break;
             case 1:
             case 2:
             case 3:
-                var angle2 = Random.Range(0, 360);
+                var angle2 = Random.Range(0, 4) * 90;
                 pos += Quaternion.Euler(0, 0, angle) * Vector3.right * (selfIndex / 3f);
                 break;
 
@@ -97,7 +100,12 @@ public class Level_Swear_Emotion : MonoBehaviour
         {
             var pledge = collision.GetComponent<Level_Swear_Pledge>();
             pledge.CollEmo(this);
-            belongPool.EnPool(gameObject);
+            this.enabled = false;
         }
+    }
+    public void BackPool()
+    {
+        belongPool.EnPool(gameObject);
+        this.enabled = true;
     }
 }

@@ -563,3 +563,33 @@ public class GenericChannel<T> where T : class
         }
     }
 }
+
+public class RandomList
+{
+    private int max;
+    private int[] waitlist;
+    private int cur;
+    public RandomList(int max)
+    {
+        this.max = max;
+        waitlist = new int[max];
+        for (int i = 0; i < max; i++)
+        {
+            waitlist[i] = i;
+        }
+        cur = max;
+    }
+    public void Clear()
+    {
+        cur = max;
+    }
+    public int GetOne()
+    {
+        int randi = UnityEngine.Random.Range(0, cur);
+        cur--;
+        waitlist.Swap(cur, randi);
+        int res = waitlist[cur];
+        if (cur == 0) cur = max;
+        return res;
+    }
+}

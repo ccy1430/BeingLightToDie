@@ -46,7 +46,6 @@ public partial class Player : MonoBehaviour
         set
         {
             whenJumpStateChange?.Invoke(js, value);
-            Debug.Log(js + " " + value);
             js = value;
         }
     }
@@ -56,6 +55,7 @@ public partial class Player : MonoBehaviour
         self_box_h = self_collider.size.x / 2;
         self_box_v = self_collider.size.y / 2;
         self_collider.size -= 0.2f * Vector2.one;
+        js = JumpState.none;
         _JumpState = JumpState.idle;
     }
     private void ActionUpdate()
@@ -181,5 +181,7 @@ public partial class Player : MonoBehaviour
         jumpframes = 0;
         speed_now = Vector3.zero;
         speed_finalAdd = Vector3.zero;
+        js = JumpState.none;
+        _JumpState = JumpState.idle;
     }
 }

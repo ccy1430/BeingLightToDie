@@ -17,11 +17,18 @@ public class PathData
     public int point = 0;
     public void TryAddSpeed(int timer, Vector3 pos)
     {
+        if (speed_add.Count >= 1024) return;
         Vector2 tempv2 = pos;
         if (tempv2 != speed_add[^1])
         {
             timestamp.Add(timer);
             speed_add.Add(tempv2);
+        }
+        //最多装下1022个数据
+        if (speed_add.Count >= 1023)
+        {
+            speed_add.Add(Vector2.zero);
+            timestamp.Add(timer + 2);
         }
     }
     public Vector2 GetSpeedByTime(int i)

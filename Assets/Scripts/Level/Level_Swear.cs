@@ -31,6 +31,7 @@ public class Level_Swear : MonoBehaviour
     private Coroutine creatCor;
     private GenericPool<GameObject> emosPool;
     private readonly List<GameObject> allEmos = new List<GameObject>();
+    private RandomList randomList = new RandomList(4);
     private IEnumerator CreatEmos()
     {
         var wfs = new WaitForSeconds(creatSpeed);

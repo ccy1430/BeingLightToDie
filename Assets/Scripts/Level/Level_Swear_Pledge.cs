@@ -8,7 +8,9 @@ public class Level_Swear_Pledge : MonoBehaviour
     private const float rectH = GameConfig.mapHeight / 2f - 1;
     private const float baseSpeed = 10;
 
+    public Transform body;
     public Transform maskTrs;
+    public GameObject hurtPrefab;
 
     private void Start()
     {
@@ -23,6 +25,8 @@ public class Level_Swear_Pledge : MonoBehaviour
         progressSpeed = originProgressSpeed = baseSpeed * 10 / SaveData.Data.levelIndex + 2;
         progress = 0;
         MaskSize();
+        selfLightSize = 0;
+        StartCoroutine(GenericTools.DelayFun_Cor(0.5f, SelfLight, null));
     }
 
     public float moveSpeed = 10;
@@ -67,6 +71,8 @@ public class Level_Swear_Pledge : MonoBehaviour
 #endif
 
     private Coroutine cor1, cor2, cor3;
+    private HashSet<Level_Swear_Emotion> emos = new HashSet<Level_Swear_Emotion>();
+    private List<GameObject> hurts = new List<GameObject>();
 
     public void CollEmo(Level_Swear_Emotion emo)
     {
@@ -74,7 +80,6 @@ public class Level_Swear_Pledge : MonoBehaviour
         progress -= 5;
         switch (emo.selfIndex)
         {
-
             case 0:
                 if (cor1 != null) GenericTools.StopCoroutine(cor1);
                 var dir = transform.position - emo.transform.position;
@@ -106,13 +111,51 @@ public class Level_Swear_Pledge : MonoBehaviour
         }
         if (progress < 0) progress = 0;
         MaskSize();
+
+        //新增一个将emo化为身上的一个点
+        emos.Add(emo);
+        Vector3 randPoint = new Vector3(Random.Range(-0.5f, 0.5f) * maskTrs.localScale.x, Random.Range(-0.3f, 0.3f));
+        StartCoroutine(GenericTools.DelayFun_Cor(0.5f, (float f) =>
+        {
+            emo.transform.localScale = Vector3.one * (1 - Mathf.Sqrt(f));
+            emo.transform.position = Vector3.Lerp(emo.transform.position, maskTrs.position + randPoint, 0.1f);
+        }, () =>
+        {
+            emo.transform.localScale = Vector3.one;
+            emo.BackPool();
+            emos.Remove(emo);
+            var hurt = Instantiate(hurtPrefab, transform.parent);
+            hurt.GetComponent<Level_Swear_Hurt>().Init(transform, randPoint);
+            hurts.Add(hurt);
+        }));
     }
 
     private const float maskMaxSize = 5.4f;
+    private float selfLightSize = 0.7f;
+    private void SelfLight(float f)
+    {
+        selfLightSize = 0.7f * f;
+        MaskSize();
+    }
     private void MaskSize()
     {
-        float scaleX = 0.7f + (progress * (maskMaxSize - 0.7f)) / 100;
+        float scaleX = selfLightSize + (progress * (maskMaxSize - 0.7f)) / 100;
         maskTrs.localScale = new Vector3(scaleX, 1, 1);
-        maskTrs.localPosition = new Vector3(scaleX / 2, 0, 0);
+        body.localPosition = new Vector3(maskMaxSize / 2 - scaleX / 2, 0, 0);
+    }
+
+    private void OnDisable()
+    {
+        foreach (var item in emos)
+        {
+            item.transform.localScale = Vector3.one;
+            item.BackPool();
+        }
+        emos.Clear();
+        foreach (var item in hurts)
+        {
+            Destroy(item);
+        }
+        hurts.Clear();
     }
 }

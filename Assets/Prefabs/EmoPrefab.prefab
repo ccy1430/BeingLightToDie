@@ -136,6 +136,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: b7ef05c8021131e4882c59b9d92859b0, type: 3}
   - {fileID: 21300000, guid: bcb8d3857c4a18d40923f97862ed2133, type: 3}
   - {fileID: 21300000, guid: b1725edbeca2dd046ba6fb29776c77b9, type: 3}
+  speedAcce: 4
   selfIndex: 0
 --- !u!61 &5320677200277940511
 BoxCollider2D:

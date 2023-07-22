@@ -75,6 +75,7 @@ public class InputSingleton : MonoBehaviour
         var touches = Input.touches;
         input_jump = false;
         input_lr = 0;
+        input_ud = 0;
         foreach (var item in touches)
         {
             if (item.rawPosition.x < Screen.width / 2) 
@@ -84,6 +85,12 @@ public class InputSingleton : MonoBehaviour
                 {
                     if (subx > 50) input_lr = 1;
                     else if (subx < -50) input_lr = -1;
+                }
+                float suby = item.position.y - item.rawPosition.y;
+                if (item.phase != TouchPhase.Ended)
+                {
+                    if (subx > 50) input_ud = 1;
+                    else if (subx < -50) input_ud = -1;
                 }
             }
             else

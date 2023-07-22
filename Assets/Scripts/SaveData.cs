@@ -43,6 +43,18 @@ public static class SaveData
             data = (SaveDataPart)bf.Deserialize(fileStream);
             //关闭文件流
             fileStream.Close();
+            if (data.version < SaveDataPart.VERSION)
+            {
+                if (data.version < 1)
+                {
+                    data.playerLightSize = 1;
+                    data.rememerCount = 32;
+                    data.hadHurt = true;
+                    data.hadChooseLevel = false;
+                }
+                data.version = SaveDataPart.VERSION;
+                Save();
+            }
         }
         else
         {
@@ -61,7 +73,16 @@ public static class SaveData
 [System.Serializable]
 public class SaveDataPart
 {
-    public int levelIndex = 1;
+    public const int VERSION = 1;
+
+    public int version = 1;
+    //version 0
+    public int levelIndex = 0;
     public float bgmVolume = 1;
     public float audVolume = 1;
+    //version 1
+    public float playerLightSize = 1;
+    public int rememerCount = 16;
+    public bool hadHurt = true;
+    public bool hadChooseLevel = false;
 }
