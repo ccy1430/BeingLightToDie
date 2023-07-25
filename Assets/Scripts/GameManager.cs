@@ -26,6 +26,7 @@ public class GameManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+        GenericMsg.AddReceiver(GenericSign.nextLevel, NextLevel_Start);
     }
 
     public AllLights allLights;
@@ -33,10 +34,6 @@ public class GameManager : MonoBehaviour
     public GameObject you;
     public UIManager uimanager;
 
-    private void Start()
-    {
-        GenericMsg.AddReceiver(GenericSign.nextLevel, NextLevel_Start);
-    }
     private void OnDestroy()
     {
         GenericMsg.DelReceiver(GenericSign.nextLevel, NextLevel_Start);
@@ -44,12 +41,30 @@ public class GameManager : MonoBehaviour
     public void NextLevel_Start()
     {
         int curLevelIndex = SaveData.Data.levelIndex;
-        curLevelIndex++;
-        SaveData.Data.levelIndex = curLevelIndex;
+        if (curLevelIndex != GameConfig.maxLevelIndex)
+        {
+            SaveData.Data.levelIndex += 1;
+        }
+        else
+        {
+            SaveData.Data.hadChooseLevel = true;
+        }
         SaveData.Save();
+
         GenericTools.DelayFun(GameTool.LightTime, null, () =>
         {
-            GenericMsg.Trigger(GenericSign.level_swear);
+            uimanager.ShowLevelText(curLevelIndex, LoadNextLevel);
         });
+    }
+    private void LoadNextLevel()
+    {
+        if (SaveData.Data.levelIndex != GameConfig.maxLevelIndex)
+        {
+            GenericMsg.Trigger(GenericSign.level_swear);
+        }
+        else
+        {
+            uimanager.Click_BackMenu();
+        }
     }
 }

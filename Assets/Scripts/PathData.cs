@@ -14,7 +14,7 @@ public class PathData
     }
     public List<Vector2> speed_add = new List<Vector2>();
     public List<int> timestamp = new List<int>();
-    public int point = 0;
+    public int pointer = 0;
     public void TryAddSpeed(int timer, Vector3 pos)
     {
         if (speed_add.Count >= 1024) return;
@@ -33,20 +33,16 @@ public class PathData
     }
     public Vector2 GetSpeedByTime(int i)
     {
-        if (point >= speed_add.Count) return Vector2.zero;
-        if (i >= timestamp[point]) point++;
-        if (point >= speed_add.Count || point == 0) return Vector2.zero;
-        return speed_add[point - 1];
-    }
-    public void ResetPoint()
-    {
-        point = 0;
+        if (pointer >= speed_add.Count) return Vector2.zero;
+        if (i >= timestamp[pointer]) pointer++;
+        if (pointer >= speed_add.Count || pointer == 0) return Vector2.zero;
+        return speed_add[pointer - 1];
     }
     public void Clear()
     {
         speed_add.Clear();
         timestamp.Clear();
-        point = 0;
+        pointer = 0;
         Init();
     }
 }

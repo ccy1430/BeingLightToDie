@@ -6,9 +6,13 @@ using UnityEngine.Rendering.Universal;
 public class AllLights : MonoBehaviour
 {
     public GameObject lightPrefab;
+    //已经生成的预制体
     private Queue<GameObject> lightQueue = new Queue<GameObject>(256);
+    //成对的light和pathdata
     private List<Light2D> lights = new List<Light2D>();
     private List<PathData> paths = new List<PathData>();
+    //已经跑完全程的light
+    private HashSet<int> hadClose = new HashSet<int>();
 
     private int fixedIndex = 0;
     private GenericPool<PathData> pathDataPool;
@@ -58,14 +62,17 @@ public class AllLights : MonoBehaviour
         ReplayAllLight();
         GenericMsg.Trigger(GenericSign.startLevel);
     }
+    
     private void FixedUpdate()
     {
         for (int i = 0; i < paths.Count; i++)
         {
+            if (hadClose.Contains(i)) continue;
             lights[i].transform.position += (Vector3)paths[i].GetSpeedByTime(fixedIndex);
-            if (paths[i].point >= paths[i].timestamp.Count)
+            if (paths[i].pointer >= paths[i].timestamp.Count)
             {
                 GameTool.CloseLight(lights[i]);
+                hadClose.Add(i);
             }
         }
         fixedIndex++;
@@ -73,10 +80,11 @@ public class AllLights : MonoBehaviour
     public void ReplayAllLight()
     {
         fixedIndex = 0;
+        hadClose.Clear();
         Vector3 pos = GameManager.Instance.player.originPos;
         for (int i = 0; i < paths.Count; i++)
         {
-            paths[i].ResetPoint();
+            paths[i].pointer=0;
             lights[i].transform.position = pos;
             GameTool.OpenLight(lights[i]);
         }
@@ -104,5 +112,6 @@ public class AllLights : MonoBehaviour
             }
         }
         paths.Clear();
+        hadClose.Clear();
     }
 }

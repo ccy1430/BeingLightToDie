@@ -28,6 +28,7 @@ public class InputSingleton : MonoBehaviour
     private int input_ud = 0;
     //private bool input_jumps = false;
     private bool input_jump = false;
+    private bool input_click = false;
     public int LR
     {
         get
@@ -42,14 +43,6 @@ public class InputSingleton : MonoBehaviour
             return input_ud;
         }
     }
-    //public bool Jumps
-    //{
-    //    get
-    //    {
-    //        if (!updateonce) GetInput();
-    //        return input_jumps;
-    //    }
-    //}
     public bool Jump
     {
         get
@@ -57,25 +50,31 @@ public class InputSingleton : MonoBehaviour
             return input_jump;
         }
     }
+    public bool Click
+    {
+        get { return input_click; }
+    }
     private void GetInput()
     {
+        input_jump = false;
+        input_lr = 0;
+        input_ud = 0;
+        input_click = false;
 
 #if UNITY_EDITOR || UNITY_STANDALONE_WIN
         if (Input.GetKey(KeyCode.RightArrow)) input_lr = 1;
         else if (Input.GetKey(KeyCode.LeftArrow)) input_lr = -1;
-        else input_lr = 0;
 
         if (Input.GetKey(KeyCode.UpArrow)) input_ud = 1;
         else if (Input.GetKey(KeyCode.DownArrow)) input_ud = -1;
-        else input_ud = 0;
 
-        //input_jumps = Input.GetKeyDown(KeyCode.Space);
         input_jump = Input.GetKey(KeyCode.Space);
+        if (Input.GetMouseButtonDown(0))
+        {
+            input_click = true;
+        }
 #elif UNITY_ANDROID
         var touches = Input.touches;
-        input_jump = false;
-        input_lr = 0;
-        input_ud = 0;
         foreach (var item in touches)
         {
             if (item.rawPosition.x < Screen.width / 2) 
@@ -95,8 +94,11 @@ public class InputSingleton : MonoBehaviour
             }
             else
             {
-                //input_jumps = item.phase == TouchPhase.Began;
                 input_jump = true;
+            }
+            if (item.tapCount == 1)
+            {
+                input_click = true;
             }
         }
 #endif

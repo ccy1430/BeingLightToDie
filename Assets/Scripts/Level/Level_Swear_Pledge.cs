@@ -12,6 +12,19 @@ public class Level_Swear_Pledge : MonoBehaviour
     public Transform maskTrs;
     public GameObject hurtPrefab;
 
+    private void Awake()
+    {
+        GenericMsg.AddReceiver(GenericSign.level_swear_end, OutPledge);
+    }
+    private void OutPledge()
+    {
+        gameObject.SetActive(false);
+    }
+    private void OnDestroy()
+    {
+        GenericMsg.DelReceiver(GenericSign.level_swear_end, OutPledge);
+    }
+
     private void Start()
     {
         gameObject.SetActive(false);
@@ -21,8 +34,8 @@ public class Level_Swear_Pledge : MonoBehaviour
     {
         transform.position = new Vector3(-0.35f, 0, 0);
         baseNum = SaveData.Data.levelIndex / 10f + 1;
-        moveSpeed = originMoveSpeed = baseSpeed - SaveData.Data.levelIndex / 15f;
-        progressSpeed = originProgressSpeed = baseSpeed * 10 / SaveData.Data.levelIndex + 2;
+        moveSpeed = originMoveSpeed = (baseSpeed - SaveData.Data.levelIndex / 15f) * SaveData.Data.pledgeSpeed;
+        progressSpeed = originProgressSpeed = (baseSpeed * 10 / SaveData.Data.levelIndex + 2) * SaveData.Data.pledgeSpeed;
         progress = 0;
         MaskSize();
         selfLightSize = 0;
@@ -56,7 +69,6 @@ public class Level_Swear_Pledge : MonoBehaviour
         if (progress >= 100)
         {
             GenericMsg.Trigger(GenericSign.level_swear_end);
-            gameObject.SetActive(false);
         }
     }
 
