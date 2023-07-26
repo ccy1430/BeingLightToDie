@@ -25,8 +25,13 @@ public class UIManager : MonoBehaviour
         "只要放弃你……\n……\n可我是谁？",
         "我是失败者，是逃避者，是无能之人。\n是悲伤的人，是不自力的螳臂，是水流中的石子。\n是小丑，是循环中的困兽，是背弃誓言的人。\n是该死的人。\n是绝望的人……",
         "对不起。",
-        "这，什么，为什么?\n\"别伤心，你知道这是我的选择。\"\n不…不…\n\"有你在一起，我已经很幸运了，别哭，我只是换了一种形态而已。\"\n可我再也见不到你了……\n" +
-            "\"我会一直看着你的，我们会再次相见的。现在请越过我，回到你自己吧。\"\n我……我不能，我做不到。\n\"没关系，你可以的，如果现在太累了，暂且休息一下也无妨。\"\n" +
+        "这，什么，为什么?\n" +
+            "\"别伤心，你知道这是我的选择。\"\n" +
+            "不…不…\n" +
+            "\"有你在一起，我已经很幸运了，别哭，我只是换了一种形态而已。\"\n" +
+            "可我再也见不到你了……\n" +
+            "\"我会一直看着你的，我们会再次相见的。现在请越过我，回到你自己吧。\"\n" +
+            "我……我不能，我做不到。\n\"没关系，你可以的，如果现在太累了，暂且休息一下也无妨。\"\n" +
             "\"但是别偷懒哦。终究你是要面对未来的。来，擦擦眼泪。\"",
     };
     private void Start()
@@ -41,22 +46,76 @@ public class UIManager : MonoBehaviour
     }
     public void ShowLevelText(int level, System.Action callBack)
     {
+        panel_ingame.SetActive(false);
         int indexOfLevel = System.Array.IndexOf(levelPointers, level);
         if (indexOfLevel == -1) callBack?.Invoke();
         else
         {
-            t_levelword.text = levelwords[indexOfLevel];
-            StartCoroutine(ShowText(callBack));
+            StartCoroutine(ShowText(callBack, levelwords[indexOfLevel]));
         }
     }
-    private IEnumerator ShowText(System.Action callBack)
+    private IEnumerator ShowText(System.Action callBack, string s)
     {
+        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        int sPointer = 0;
+        const float LoopCount = 0.1f;
+        float loop = 0;
+        bool had_y = false;
+        while (true)
+        {
+            if (InputSingleton.Instance.Click)
+            {
+                int ii = sPointer;
+                sPointer = s.IndexOf('\n', ii);
+                if (sPointer == -1)
+                {
+                    sPointer = s.Length;
+                }
+                else sPointer += 1;
+
+                sb.Append(s.Substring(ii, sPointer - ii));
+                if (had_y)
+                {
+                    sb.Append("</color>");
+                    had_y = false;
+                }
+                loop = 0;
+            }
+            else
+            {
+                loop += Time.deltaTime;
+                if (loop >= LoopCount)
+                {
+                    bool iscolor = s[sPointer] == '\"';
+                    if (iscolor && !had_y)
+                    {
+                        sb.Append("<color=#FFC0CB>");
+                        had_y = !had_y;
+                        iscolor = false;
+                    }
+                    sb.Append(s[sPointer]);
+                    if (iscolor && had_y)
+                    {
+                        sb.Append("</color>");
+                        had_y = !had_y;
+                    }
+                    sPointer++;
+                    loop = 0;
+                }
+            }
+            t_levelword.text = sb.ToString();
+            if (had_y) t_levelword.text += "</color>";
+            if (sPointer >= s.Length) break;
+            yield return null;
+        }
+        yield return null;
         while (true)
         {
             if (InputSingleton.Instance.Click) break;
             yield return null;
         }
         t_levelword.text = "";
+        panel_ingame.SetActive(true);
         callBack?.Invoke();
     }
 
