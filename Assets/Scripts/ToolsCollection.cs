@@ -310,6 +310,7 @@ public enum GenericSign
     loadLevel,
     loadFlower,
 
+    uiInterfaceChange,
 }
 public class GenericPool<T>
 {

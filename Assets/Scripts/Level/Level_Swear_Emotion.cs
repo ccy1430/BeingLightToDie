@@ -6,6 +6,7 @@ public class Level_Swear_Emotion : MonoBehaviour
 {
     private const float rectW = GameConfig.mapWidth / 2f + 1;
     private const float rectH = GameConfig.mapHeight / 2f + 1;
+    
 
     public SpriteRenderer sprr;
     public Sprite[] sprites;
@@ -107,5 +108,19 @@ public class Level_Swear_Emotion : MonoBehaviour
     {
         belongPool.EnPool(gameObject);
         this.enabled = true;
+    }
+
+    [ContextMenu("Splite")]
+    public void Splite()
+    {
+        var tempparent = new GameObject();
+        var rect = new Rect(sprr.bounds.center, new Vector2(2.4f, 0.8f));
+        Material mat = new Material(sprr.sharedMaterial);
+        mat.mainTexture = sprr.sprite.texture;
+        var gos = SpriteExploder.GenerateTriangularPieces(gameObject, rect, 3, mat);
+        foreach (var item in gos)
+        {
+            item.transform.parent = tempparent.transform;
+        }
     }
 }

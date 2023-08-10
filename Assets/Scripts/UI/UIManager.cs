@@ -8,6 +8,9 @@ public class UIManager : MonoBehaviour
 {
     //public TextMeshProUGUI tmp_levelword;
     public Text t_levelword;
+    public WordShowEffect wordShowEffect;
+    public CanvasGroup allUIAphla;
+
     private bool waitClick = false;
     private readonly int[] levelPointers = new int[]
     {
@@ -26,14 +29,16 @@ public class UIManager : MonoBehaviour
         "我是失败者，是逃避者，是无能之人。\n是悲伤的人，是不自力的螳臂，是水流中的石子。\n是小丑，是循环中的困兽，是背弃誓言的人。\n是该死的人。\n是绝望的人……",
         "对不起。",
         "这，什么，为什么?\n" +
-            "\"别伤心，你知道这是我的选择。\"\n" +
+            "<color=#FFC0CB>\"别伤心，你知道这是我的选择。\"</color>\n" +
             "不…不…\n" +
-            "\"有你在一起，我已经很幸运了，别哭，我只是换了一种形态而已。\"\n" +
+            "<color=#FFC0CB>\"有你在一起，我已经很幸运了，别哭，我只是换了一种形态而已。\"</color>\n" +
             "可我再也见不到你了……\n" +
-            "\"我会一直看着你的，我们会再次相见的。现在请越过我，回到你自己吧。\"\n" +
-            "我……我不能，我做不到。\n\"没关系，你可以的，如果现在太累了，暂且休息一下也无妨。\"\n" +
-            "\"但是别偷懒哦。终究你是要面对未来的。来，擦擦眼泪。\"",
+            "<color=#FFC0CB>\"我会一直看着你的，我们会再次相见的。现在请越过我，回到你自己吧。\"</color>\n" +
+            "我……我不能，我做不到。\n" +
+            "<color=#FFC0CB>\"没关系，你可以的，如果现在太累了，暂且休息一下也无妨。\"</color>\n" +
+            "<color=#FFC0CB>\"但是别偷懒哦。终究你是要面对未来的。来，擦擦眼泪。\"</color>",
     };
+
     private void Start()
     {
         t_levelword.text = "";
@@ -43,7 +48,10 @@ public class UIManager : MonoBehaviour
         panel_ingame.gameObject.SetActive(false);
         //todo 返回主菜单时也有这个
         startGameBtnText.text = SaveData.Data.levelIndex == 0 ? "开始游戏" : "继续游戏";
+
+        GenericTools.DelayFun(2f, f => allUIAphla.alpha = f, null);
     }
+
     public void ShowLevelText(int level, System.Action callBack)
     {
         panel_ingame.SetActive(false);
@@ -51,64 +59,12 @@ public class UIManager : MonoBehaviour
         if (indexOfLevel == -1) callBack?.Invoke();
         else
         {
-            StartCoroutine(ShowText(callBack, levelwords[indexOfLevel]));
+            t_levelword.text = levelwords[indexOfLevel];
+            wordShowEffect.AddCompleteListener(() => StartCoroutine(ShowTextEnd(callBack)));
         }
     }
-    private IEnumerator ShowText(System.Action callBack, string s)
+    private IEnumerator ShowTextEnd(System.Action callBack)
     {
-        System.Text.StringBuilder sb = new System.Text.StringBuilder();
-        int sPointer = 0;
-        const float LoopCount = 0.1f;
-        float loop = 0;
-        bool had_y = false;
-        while (true)
-        {
-            if (InputSingleton.Instance.Click)
-            {
-                int ii = sPointer;
-                sPointer = s.IndexOf('\n', ii);
-                if (sPointer == -1)
-                {
-                    sPointer = s.Length;
-                }
-                else sPointer += 1;
-
-                sb.Append(s.Substring(ii, sPointer - ii));
-                if (had_y)
-                {
-                    sb.Append("</color>");
-                    had_y = false;
-                }
-                loop = 0;
-            }
-            else
-            {
-                loop += Time.deltaTime;
-                if (loop >= LoopCount)
-                {
-                    bool iscolor = s[sPointer] == '\"';
-                    if (iscolor && !had_y)
-                    {
-                        sb.Append("<color=#FFC0CB>");
-                        had_y = !had_y;
-                        iscolor = false;
-                    }
-                    sb.Append(s[sPointer]);
-                    if (iscolor && had_y)
-                    {
-                        sb.Append("</color>");
-                        had_y = !had_y;
-                    }
-                    sPointer++;
-                    loop = 0;
-                }
-            }
-            t_levelword.text = sb.ToString();
-            if (had_y) t_levelword.text += "</color>";
-            if (sPointer >= s.Length) break;
-            yield return null;
-        }
-        yield return null;
         while (true)
         {
             if (InputSingleton.Instance.Click) break;
@@ -132,28 +88,17 @@ public class UIManager : MonoBehaviour
             SaveData.Data.levelIndex = 1;
             SaveData.Save();
             panel_start.SetActive(false);
-            ShowLevelText(0, () => StartGameWithLevelIndex(SaveData.Data.levelIndex));
+            ShowLevelText(0, () => GenericMsg.Trigger(GenericSign.level_swear));
             return;
         }
-        StartGameWithLevelIndex(SaveData.Data.levelIndex);
+        GenericMsg.Trigger(GenericSign.level_swear);
     }
     private void StartGameWithLevelIndex(int levelIndex)
     {
-        GenericMsg.Trigger(GenericSign.level_swear);
-        panel_start.SetActive(false);
-        panel_ingame.SetActive(true);
-    }
-    public void Click_ChooseLevel()
-    {
-        panel_start.SetActive(false);
-        panel_choose.SetActive(true);
-        OpenChoosePanel();
     }
     public void Click_BackMenu()
     {
         GenericMsg.Trigger(GenericSign.backMenu);
-        panel_start.SetActive(true);
-        panel_ingame.SetActive(false);
     }
     public void Click_ResetLevel()
     {
@@ -168,24 +113,21 @@ public class UIManager : MonoBehaviour
     [Header("Choose Panel")]
     public GameObject levelbtnPrefab;
     private readonly List<Transform> levelsBtns = new List<Transform>();
-    public void OpenChoosePanel()
+    public void InitChoosePanel()
     {
-        if (levelsBtns.Count != SaveData.Data.levelIndex)
+        for (int i = levelsBtns.Count; i < GameConfig.maxLevelIndex; i++)
         {
-            for (int i = levelsBtns.Count; i < SaveData.Data.levelIndex; i++)
-            {
-                var go = Instantiate(levelbtnPrefab, panel_choose.transform);
-                go.transform.localPosition = new Vector3(i * 240, i * -90);
-                var tempbtn = go.GetComponent<Button>();
-                int tempi = i + 1;
-                tempbtn.onClick.AddListener(() =>
-                {
-                    panel_choose.SetActive(false);
-                    StartGameWithLevelIndex(tempi);
-                });
-                tempbtn.GetComponentInChildren<Text>().text = tempi.ToString();
-                levelsBtns.Add(go.transform);
-            }
+            var go = Instantiate(levelbtnPrefab, panel_choose.transform);
+            go.transform.localPosition = new Vector3(i * 240, i * -90);
+            var tempbtn = go.GetComponent<Button>();
+            int tempi = i + 1;
+            tempbtn.onClick.AddListener(() =>
+            {//todo add ahpla tranf
+                panel_choose.SetActive(false);
+                StartGameWithLevelIndex(tempi);
+            });
+            tempbtn.GetComponentInChildren<Text>().text = tempi.ToString();
+            levelsBtns.Add(go.transform);
         }
     }
     private readonly Vector2 chooseLevelDir = new Vector2(8, -3).normalized;

@@ -89,6 +89,8 @@ public class Level_Swear_Pledge : MonoBehaviour
     public void CollEmo(Level_Swear_Emotion emo)
     {
         Debug.Log("coll emo :" + emo.selfIndex);
+        
+
         progress -= 5;
         switch (emo.selfIndex)
         {
@@ -127,19 +129,21 @@ public class Level_Swear_Pledge : MonoBehaviour
         //新增一个将emo化为身上的一个点
         emos.Add(emo);
         Vector3 randPoint = new Vector3(Random.Range(-0.5f, 0.5f) * maskTrs.localScale.x, Random.Range(-0.3f, 0.3f));
-        StartCoroutine(GenericTools.DelayFun_Cor(0.5f, (float f) =>
-        {
-            emo.transform.localScale = Vector3.one * (1 - Mathf.Sqrt(f));
-            emo.transform.position = Vector3.Lerp(emo.transform.position, maskTrs.position + randPoint, 0.1f);
-        }, () =>
-        {
-            emo.transform.localScale = Vector3.one;
-            emo.BackPool();
-            emos.Remove(emo);
-            var hurt = Instantiate(hurtPrefab, transform.parent);
-            hurt.GetComponent<Level_Swear_Hurt>().Init(transform, randPoint);
-            hurts.Add(hurt);
-        }));
+        emo.BackPool();
+
+        //StartCoroutine(GenericTools.DelayFun_Cor(0.5f, (float f) =>
+        //{
+        //    emo.transform.localScale = Vector3.one * (1 - Mathf.Sqrt(f));
+        //    emo.transform.position = Vector3.Lerp(emo.transform.position, maskTrs.position + randPoint, 0.1f);
+        //}, () =>
+        //{
+        //    emo.transform.localScale = Vector3.one;
+        //    emo.BackPool();
+        //    emos.Remove(emo);
+        //    var hurt = Instantiate(hurtPrefab, transform.parent);
+        //    hurt.GetComponent<Level_Swear_Hurt>().Init(transform, randPoint);
+        //    hurts.Add(hurt);
+        //}));
     }
 
     private const float maskMaxSize = 5.4f;

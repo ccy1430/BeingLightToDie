@@ -25,8 +25,7 @@ public class AllLights : MonoBehaviour
         pathDataPool = GenericPool<PathData>.LinkSignPool(GenericSign.playerDie, () =>
              {
                  return new GenericPool<PathData>(() => { return new PathData(); }, (pd) => { pd.Clear(); }, null);
-             }
-            );
+             });
     }
     private void OnDestroy()
     {
@@ -39,8 +38,9 @@ public class AllLights : MonoBehaviour
 
     public void SetLight(PathData path)
     {
-        if (SaveData.Data.rememerCount == 0) return;
-        if (lights.Count == SaveData.Data.rememerCount)
+        int rc = SaveData.Data.rememerCount;
+        if (rc == 0) return;
+        if (lights.Count >= rc && paths.Count >= rc)
         {
             lightQueue.Enqueue(lights[0].gameObject);
             lights.RemoveAt(0);
@@ -62,7 +62,7 @@ public class AllLights : MonoBehaviour
         ReplayAllLight();
         GenericMsg.Trigger(GenericSign.startLevel);
     }
-    
+
     private void FixedUpdate()
     {
         for (int i = 0; i < paths.Count; i++)
@@ -84,7 +84,7 @@ public class AllLights : MonoBehaviour
         Vector3 pos = GameManager.Instance.player.originPos;
         for (int i = 0; i < paths.Count; i++)
         {
-            paths[i].pointer=0;
+            paths[i].pointer = 0;
             lights[i].transform.position = pos;
             GameTool.OpenLight(lights[i]);
         }
@@ -100,7 +100,10 @@ public class AllLights : MonoBehaviour
                 var l2d = trs.gameObject.GetComponent<Light2D>();
                 if (l2d != null)
                 {
-                    GameTool.CloseLight(l2d, cb: () => { trs.gameObject.SetActive(false); });
+                    if (l2d.pointLightOuterRadius == 1)
+                    {
+                        GameTool.CloseLight(l2d, cb: () => { trs.gameObject.SetActive(false); });
+                    }
                 }
             }
         }
@@ -111,6 +114,7 @@ public class AllLights : MonoBehaviour
                 pathDataPool.EnPool(item);
             }
         }
+        lights.Clear();
         paths.Clear();
         hadClose.Clear();
     }
