@@ -51,6 +51,7 @@ public class Level_Swear : MonoBehaviour
     private void Emo_EnPool(GameObject item)
     {
         item.SetActive(false);
+        item.transform.position = Vector2.right * 100;
     }
     private void Emo_DePool(GameObject item)
     {

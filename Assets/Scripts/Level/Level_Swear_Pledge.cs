@@ -83,14 +83,13 @@ public class Level_Swear_Pledge : MonoBehaviour
 #endif
 
     private Coroutine cor1, cor2, cor3;
-    private HashSet<Level_Swear_Emotion> emos = new HashSet<Level_Swear_Emotion>();
     private List<GameObject> hurts = new List<GameObject>();
 
     public void CollEmo(Level_Swear_Emotion emo)
     {
         Debug.Log("coll emo :" + emo.selfIndex);
-        
 
+        float originProgress = progress;
         progress -= 5;
         switch (emo.selfIndex)
         {
@@ -124,26 +123,55 @@ public class Level_Swear_Pledge : MonoBehaviour
                 break;
         }
         if (progress < 0) progress = 0;
+
+        SplitEmoAndSelf(emo, originProgress - progress);
+
         MaskSize();
 
-        //新增一个将emo化为身上的一个点
-        emos.Add(emo);
-        Vector3 randPoint = new Vector3(Random.Range(-0.5f, 0.5f) * maskTrs.localScale.x, Random.Range(-0.3f, 0.3f));
         emo.BackPool();
+    }
+    private void SplitEmoAndSelf(Level_Swear_Emotion emo, float subSize)
+    {
+        var emoSize = new Vector2(emo.sprr.sprite.texture.width, emo.sprr.sprite.texture.height) / 100;
+        var rect = new Rect((Vector2)emo.transform.position - emoSize / 2, emoSize);
+        var go = SpriteExploder.GenerateTriangularPieces(emo.sprr, rect, Color.red);
 
-        //StartCoroutine(GenericTools.DelayFun_Cor(0.5f, (float f) =>
-        //{
-        //    emo.transform.localScale = Vector3.one * (1 - Mathf.Sqrt(f));
-        //    emo.transform.position = Vector3.Lerp(emo.transform.position, maskTrs.position + randPoint, 0.1f);
-        //}, () =>
-        //{
-        //    emo.transform.localScale = Vector3.one;
-        //    emo.BackPool();
-        //    emos.Remove(emo);
-        //    var hurt = Instantiate(hurtPrefab, transform.parent);
-        //    hurt.GetComponent<Level_Swear_Hurt>().Init(transform, randPoint);
-        //    hurts.Add(hurt);
-        //}));
+        subSize = subSize * (maskMaxSize - 0.7f) / 100;
+        var bodysprr = body.GetComponent<SpriteRenderer>();
+        Vector2 size = new Vector2(subSize, emo.sprr.sprite.texture.height / 100f);
+        Vector2 center = transform.position + Vector3.right * (maskTrs.localScale.x / 2 - subSize / 2);
+        var go2 = SpriteExploder.GenerateTriangularPieces(bodysprr, new Rect(center - size / 2, size), Color.white);
+
+        var centerPos = emo.transform.position;
+        float[] pieceDis = new float[go2.transform.childCount];
+        for (int i = 0; i < go2.transform.childCount; i++)
+        {
+            pieceDis[i] = (go2.transform.GetChild(i).position - centerPos).magnitude;
+        }
+        const float costTime = 1f;
+        GenericTools.DelayFun(costTime, (float f) =>
+        {
+            foreach (Transform item in go.transform)
+            {
+                Vector3 v3 = item.position - centerPos;
+                v3 = Quaternion.Euler(0, 0, 90 / costTime * Time.deltaTime) * v3;
+                v3 = v3 * 0.9f + 0.1f * 1 * Mathf.Sin(f * Mathf.PI) * v3.normalized;
+                item.position = centerPos + v3;
+            }
+            for (int i = 0; i < go2.transform.childCount; i++)
+            {
+                Transform item = go2.transform.GetChild(i);
+                Vector3 v3 = item.position - centerPos;
+                v3 = Quaternion.Euler(0, 0, (360 + i * 30) / costTime * Time.deltaTime) * v3;
+                v3 = v3.normalized * (pieceDis[i] * (1 - f));
+                item.position = centerPos + v3;
+            }
+
+        }, () =>
+        {
+            Destroy(go);
+            Destroy(go2);
+        });
     }
 
     private const float maskMaxSize = 5.4f;
@@ -162,12 +190,6 @@ public class Level_Swear_Pledge : MonoBehaviour
 
     private void OnDisable()
     {
-        foreach (var item in emos)
-        {
-            item.transform.localScale = Vector3.one;
-            item.BackPool();
-        }
-        emos.Clear();
         foreach (var item in hurts)
         {
             Destroy(item);

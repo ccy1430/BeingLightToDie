@@ -101,17 +101,15 @@ public class Level_Swear_Emotion : MonoBehaviour
         {
             var pledge = collision.GetComponent<Level_Swear_Pledge>();
             pledge.CollEmo(this);
-            this.enabled = false;
         }
     }
     public void BackPool()
     {
         belongPool.EnPool(gameObject);
-        this.enabled = true;
     }
 
     [ContextMenu("Splite")]
-    public void Splite()
+    public GameObject Splite()
     {
         var tempparent = new GameObject();
         var rect = new Rect(sprr.bounds.center, new Vector2(2.4f, 0.8f));
@@ -122,5 +120,6 @@ public class Level_Swear_Emotion : MonoBehaviour
         {
             item.transform.parent = tempparent.transform;
         }
+        return tempparent;
     }
 }

@@ -91,7 +91,21 @@ public static class SpriteExploder
 
         return morePieces;
     }
-    public static List<GameObject> GenerateTriangularPieces(GameObject source, Rect rect, int extraPoints = 0, Material mat = null)
+    public static GameObject GenerateTriangularPieces(SpriteRenderer sprr, Rect rect, Color matColor)
+    {
+        var tempparent = new GameObject();
+        if (rect.width == 0 || rect.height == 0) return tempparent;
+        Material mat = new Material(sprr.sharedMaterial);
+        mat.color = matColor;
+        mat.mainTexture = sprr.sprite.texture;
+        var gos = SpriteExploder.GenerateTriangularPieces(sprr.gameObject, rect, 0.5f, mat);
+        foreach (var item in gos)
+        {
+            item.transform.parent = tempparent.transform;
+        }
+        return tempparent;
+    }
+    public static List<GameObject> GenerateTriangularPieces(GameObject source, Rect rect, float expectSize = 0, Material mat = null)
     {
         List<GameObject> pieces = new List<GameObject>();
 
@@ -116,37 +130,43 @@ public static class SpriteExploder
             borderPoints.AddRange(points);
         }
 
-        for (int i = 0; i < extraPoints; i++)
+        int w = Mathf.FloorToInt(rect.width / expectSize) + 1;
+        int h = Mathf.FloorToInt(rect.height / expectSize) + 1;
+        if (w > 0 && h > 0)
         {
-            Vector2 point = new Vector2(Random.Range(0, rect.width), Random.Range(0, rect.height)) - rect.size / 2;
-            float checkdis = rect.size.magnitude * 0.2f;
-            while (true)
+            for (int i = 1; i < w; i++)
             {
-                bool canBreak = true;
-                for (int j = 0; j < points.Count; j++)
+                for (int j = 1; j < h; j++)
                 {
-                    if ((point - points[j]).sqrMagnitude < checkdis)
-                    {
-                        canBreak = false;
-                        break;
-                    }
+                    Vector2 point = new Vector2(rect.width / w * i, rect.height / h * j) - rect.size / 2;
+                    point += new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f)) * expectSize * 0.2f;
+                    points.Add(point);
                 }
-                if (canBreak) break;
-                checkdis *= 0.9f;
-                point = new Vector2(Random.Range(0, rect.width), Random.Range(0, rect.height)) - rect.size / 2;
             }
-
-            points.Add(point);
+            for (int i = 1; i < h; i++)
+            {
+                points.Add(new Vector2(0, rect.height / h * i) - rect.size / 2);
+                points.Add(new Vector2(rect.width, rect.height / h * i) - rect.size / 2);
+            }
+            for (int i = 1; i < w; i++)
+            {
+                points.Add(new Vector2(rect.width / w * i, 0) - rect.size / 2);
+                points.Add(new Vector2(rect.width / w * i, rect.height) - rect.size / 2);
+            }
         }
-
         Voronoi voronoi = new Delaunay.Voronoi(points, null, rect);
 
         List<List<Vector2>> clippedTriangles = new List<List<Vector2>>();
+        Vector2 fixPos = rect.center - (Vector2)source.transform.position;
         foreach (Triangle tri in voronoi.Triangles())
         {
             clippedTriangles = ClipperHelper.clip(borderPoints, tri);
             foreach (List<Vector2> triangle in clippedTriangles)
             {
+                for (int i = 0; i < triangle.Count; i++)
+                {
+                    triangle[i] += fixPos;
+                }
                 pieces.Add(generateTriangularPiece(source, triangle, origScale, origRotation, mat));
             }
         }
