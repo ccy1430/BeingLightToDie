@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class Water_hor : MonoBehaviour
@@ -13,17 +14,19 @@ public class Water_hor : MonoBehaviour
     private const int sidePoint = 3;
     private int length = 0;
     private int lrRadian = 0;
+    private GenericPool<ParticleSystem> particlePool;
 
     /// <summary>
     /// </summary>
     /// <param name="lrRadian">3 两边弧度 1 左边弧度 2 右边弧度 0 没有弧度 </param>
-    public void Init(float left, float right, int lrRadian)
+    public void Init(float left, float right, int lrRadian, GenericPool<ParticleSystem> particlePool = null)
     {
         leftLimit = left;
         rightLimit = right;
         this.lrRadian = lrRadian;
         CreatMesh();
         GetComponent<BoxCollider2D>().size = new Vector2(right - left + 0.2f, 0.3f);
+        this.particlePool = particlePool;
     }
     [ContextMenu("CreatMesh")]
     private void CreatMesh()
@@ -67,15 +70,15 @@ public class Water_hor : MonoBehaviour
 
         preHeights = new float[length];
         nextHeights = new float[length];
-        if ((lrRadian & 1) != 0) 
+        if ((lrRadian & 1) != 0)
         {
             curVertices[0].y = -height / 3;
             curVertices[2].y = -height / 12;
         }
         if ((lrRadian & 2) != 0)
         {
-            curVertices[2*length - 2].y = -height / 3;
-            curVertices[2*length - 4].y = -height / 12;
+            curVertices[2 * length - 2].y = -height / 3;
+            curVertices[2 * length - 4].y = -height / 12;
         }
 
         InitMk();
@@ -113,7 +116,7 @@ public class Water_hor : MonoBehaviour
             AddForce(site, f);
             return;
         }
-        if (site < 5 || site > length - 6) 
+        if (site < 5 || site > length - 6)
         {
             AddForce(site, f);
             AddForce(site + 1, -f / 2);
@@ -125,6 +128,19 @@ public class Water_hor : MonoBehaviour
         AddForce(site + 1, f / 2);
         AddForce(site + 3, -f);
         AddForce(site - 3, -f);
+        if (particlePool != null)
+        {
+            var particle = particlePool.GetT();
+            particle.transform.position = new Vector3(pos.x, transform.position.y);
+            particle.Play();
+            StartCoroutine(RecyleParticle(particle));
+        }
+    }
+    private WaitForSeconds wait1sce = new WaitForSeconds(1);
+    private IEnumerator RecyleParticle(ParticleSystem particle)
+    {
+        yield return wait1sce;
+        particlePool.EnPool(particle);
     }
     private void AddForce(int x, float f)
     {
@@ -155,7 +171,7 @@ public class Water_hor : MonoBehaviour
             curVertices[0].y = curVertices[0].y * 0.5f + curVertices[4].y * 0.125f;
         }
         int sidesite = length * 2 - 6;
-        if((lrRadian & 2) != 0)
+        if ((lrRadian & 2) != 0)
         {
             curVertices[length * 2 - 4].y = curVertices[length * 2 - 4].y * 0.5f + 0.5f * (-height / 12 + curVertices[sidesite].y * 0.5f);
             curVertices[length * 2 - 2].y = curVertices[length * 2 - 2].y * 0.5f + 0.5f * (-height / 3 + curVertices[sidesite].y * 0.25f);

@@ -58,13 +58,18 @@ public class GameManager : MonoBehaviour
     }
     private void LoadNextLevel()
     {
-        if (SaveData.Data.levelIndex != GameConfig.maxLevelIndex)
+        if (SaveData.Data.levelIndex < GameConfig.maxLevelIndex)
         {
             GenericMsg.Trigger(GenericSign.level_swear);
         }
         else
         {
-            uimanager.Click_BackMenu();
+            uimanager.panel_ingame.SetActive(false);
+            GenericMsg<System.Action>.Trigger(GenericSign.uiInterfaceChange, () =>
+            {
+                uimanager.panel_start.SetActive(true);
+                uimanager.Click_BackMenu();
+            });
         }
     }
 }

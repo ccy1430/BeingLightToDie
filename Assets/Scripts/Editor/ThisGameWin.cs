@@ -54,6 +54,11 @@ public class ThisGameWin : EditorWindow
         {
             TripToLevel();
         }
+        GUILayout.Space(20);
+        if (GUILayout.Button("运行时跳过关卡"))
+        {
+            JumpLevel();
+        }
     }
     const string frontPath = "Assets/Resources/Levels/";
     BoundsInt bound = GameConfig.allTilesBound;
@@ -114,5 +119,13 @@ public class ThisGameWin : EditorWindow
         instance.transform.Find("trip").GetComponent<TilemapCollider2D>().ProcessTilemapChanges();
         PrefabUtility.SaveAsPrefabAsset(instance, prefabpath);
         DestroyImmediate(instance);
+    }
+    private void JumpLevel()
+    {
+        var player = GameObject.FindObjectOfType<Player>();
+        if (player != null && player.gameObject.activeSelf)
+        {
+            player.ThroughLevel();
+        }
     }
 }

@@ -46,7 +46,7 @@ public partial class Player : MonoBehaviour
         whenJumpStateChange += (oldv, newv) =>
         {
             if (oldv == JumpState.idle && newv == JumpState.jumping) JumpWater(0.03f);
-            if (oldv == JumpState.fall && newv == JumpState.jumpending) JumpWater(-0.03f);
+            if (oldv == JumpState.fall && newv == JumpState.idle) JumpWater(-0.03f);
         };
     }
     private void AddReceiver()
@@ -139,7 +139,7 @@ public partial class Player : MonoBehaviour
         cachePath.TryAddSpeed(fixedTime, Vector3.zero);
         self_anim.speed = 0;
 
-        AudioManager.Instance.PlayAudio("die");
+        AudioManager.Instance.PlayAudio("clock");
         AudioManager.Instance.Stop("walk");
 
         GenericMsg.Trigger(GenericSign.playerDie);
@@ -166,27 +166,40 @@ public partial class Player : MonoBehaviour
         }
         else if (coll.CompareTag("You"))
         {
-            self_anim.speed = 0;
-
-            AudioManager.Instance.PlayAudio("levelend");
-            AudioManager.Instance.Stop("walk");
-
-            Debug.Log("Find you,save you,i promise");
-            cachePath.Clear();
-            GenericMsg.Trigger(GenericSign.nextLevel);
-            ExitLevel();
+            ThroughLevel();
         }
+    }
+    public void ThroughLevel()
+    {
+        self_anim.speed = 0;
+
+        AudioManager.Instance.PlayAudio("clock");
+        AudioManager.Instance.Stop("walk");
+
+        Debug.Log("Find you,save you,i promise");
+        cachePath.Clear();
+        GenericMsg.Trigger(GenericSign.nextLevel);
+        ExitLevel();
     }
 
     #region tools
     public void Lighting(System.Action cb)
     {
-        GameTool.OpenLight(light2d, rang: light2dRange, cb: cb);
+        GenericTools.DelayFun(GameTool.LightTime, (f) =>
+        {
+            light2d.pointLightOuterRadius = light2dRange * f;
+            light2d.pointLightInnerRadius = 0.5f * f;
+        }, cb);
     }
 
     public void Fade(System.Action cb)
     {
-        GameTool.CloseLight(light2d, rang: light2dRange, cb: cb);
+        GenericTools.DelayFun(GameTool.LightTime, (f) =>
+        {
+            f = 1 - f;
+            light2d.pointLightOuterRadius = light2dRange * f;
+            light2d.pointLightInnerRadius = 0.5f * f;
+        }, cb);
     }
 
     private void JumpWater(float force)

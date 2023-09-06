@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.NetworkInformation;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -22,6 +23,7 @@ public class WordShowEffect : BaseMeshEffect
     public WordEffect WordEffectMode;
     //动画执行到第几个字的标记，第一个字的标记是1
     private int _currentWordIndex = 1;
+    private int _allWordIndex = 1;
     //开始当前字的动画的时间
     private float _updateWordTime = 0;
     /// <summary>
@@ -44,8 +46,8 @@ public class WordShowEffect : BaseMeshEffect
     //初始化信息
     protected override void Awake()
     {
-        InitData();
         _text = GetComponent<Text>();
+        InitData();
     }
 
     void Update()
@@ -57,7 +59,7 @@ public class WordShowEffect : BaseMeshEffect
                 _updateWordTime = Time.time;
                 if (_updateNum == _wordUpdateTimes)
                 {
-                    if (_currentWordIndex < _text.text.Length)
+                    if (_currentWordIndex < _allWordIndex)
                     {
                         _currentWordIndex++;
                         _updateNum = 0;
@@ -66,7 +68,10 @@ public class WordShowEffect : BaseMeshEffect
                     {
                         IsRunning = false;
                         if (_onComplete != null)
+                        {
                             _onComplete();
+                            _onComplete = null;
+                        }
                         //Debug.Log("end");
                     }
                 }
@@ -76,34 +81,35 @@ public class WordShowEffect : BaseMeshEffect
         }
         //Debug.Log("isRuning:"+IsRunning);
     }
-    
+
     public override void ModifyMesh(VertexHelper vh)
     {
         if (!IsActive())
             return;
-        
+
         if (_oldText != _text.text)
         {
             _oldText = _text.text;
             Run();
         }
-        
-        if(_wordAlphaEffect == null)
+
+        if (_wordAlphaEffect == null)
             return;
 
-        _wordAlphaEffect.ModifyMesh(vh,_currentWordIndex,_updateNum);
+        _wordAlphaEffect.ModifyMesh(vh, _currentWordIndex, _updateNum);
     }
 
     private void InitData()
     {
         _updateWordTime = Time.time;
         _currentWordIndex = 1;
+        _allWordIndex = _text == null ? 1 : _text.cachedTextGenerator.vertexCount / 4;
         _updateNum = 0;
         _wordUpdateTimes = Mathf.CeilToInt(EachEffectTime / UpdateMeshTime);
         _alphaOffset = 1.0f / _wordUpdateTimes;
         InitEffectMode();
-        if(_wordAlphaEffect != null)
-            _wordAlphaEffect.Init(_alphaOffset,_wordUpdateTimes);
+        if (_wordAlphaEffect != null)
+            _wordAlphaEffect.Init(_alphaOffset, _wordUpdateTimes);
     }
 
     private void InitEffectMode()
@@ -128,7 +134,7 @@ public class WordShowEffect : BaseMeshEffect
     /// 添加动画完成监听，主动停止的动画也会调用回调
     /// </summary>
     /// <param name="complete"></param>
-    public void AddCompleteListener(Action complete)
+    public void AddOnceCompleteListener(Action complete)
     {
         _onComplete = complete;
     }
@@ -148,20 +154,20 @@ public class WordShowEffect : BaseMeshEffect
     /// </summary>
     /// <param name="content"></param>
     /// <param name="delayTime"></param>
-    public void ChangeContent(string content,float delayTime = 1)
+    public void ChangeContent(string content, float delayTime = 1)
     {
         Stop();
         StopAllCoroutines();
-        StartCoroutine(Wait(content,delayTime));
+        StartCoroutine(Wait(content, delayTime));
     }
 
     //避免unity版本问题，没有使用C#异步
-    private IEnumerator Wait(string content,float delayTime)
+    private IEnumerator Wait(string content, float delayTime)
     {
         yield return new WaitForSeconds(delayTime);
         _text.text = content;
     }
-    
+
     /// <summary>
     /// 运行当前动画，可重新运行动画
     /// </summary>
@@ -170,13 +176,13 @@ public class WordShowEffect : BaseMeshEffect
         InitData();
         IsRunning = WordEffectMode != WordEffect.NULL;
     }
-    
+
     /// <summary>
     /// 停止当前动画，直接显示最后结果
     /// </summary>
     public void Stop()
     {
-        _currentWordIndex = _text.text.Length;
+        _currentWordIndex = _allWordIndex;
         _updateNum = _wordUpdateTimes;
     }
 }
@@ -184,7 +190,7 @@ public class WordShowEffect : BaseMeshEffect
 public abstract class WordAlphaEffectBase
 {
     protected int _wordUpdateTimes;
-    protected float _alphaOffset; 
+    protected float _alphaOffset;
     public void Init(float alphaOffset, int wordUpdateTimes)
     {
         _wordUpdateTimes = wordUpdateTimes;
@@ -197,56 +203,57 @@ public abstract class WordAlphaEffectBase
 public class NullEffect : WordAlphaEffectBase
 {
 
-    public override void ModifyMesh(VertexHelper vh,int currentWordIndex,int updateNum)
+    public override void ModifyMesh(VertexHelper vh, int currentWordIndex, int updateNum)
     {
         List<UIVertex> verts = new List<UIVertex>();
         vh.GetUIVertexStream(verts);
         vh.Clear();
-        
-        if(verts.Count == 0)
+
+        if (verts.Count == 0)
             return;
 
         int index = verts.Count / 6;
 
         AddVert(vh, verts, index * 6);
-        AddTriangle(vh, index*4);
+        AddTriangle(vh, index * 4);
     }
 
     protected override void SetColor(List<UIVertex> verts, int currentWordIndex, int updateNum)
     {
-        
+
     }
 
-    private void AddVert(VertexHelper vh,List<UIVertex> verts,int count)
+    private void AddVert(VertexHelper vh, List<UIVertex> verts, int count)
     {
-        for (int i = 0; i < count; i+=6)
+        for (int i = 0; i < count; i += 6)
         {
             var tl = verts[i + 0];
             var tr = verts[i + 1];
             var bl = verts[i + 4];
             var br = verts[i + 3];
 
-            vh.AddVert (tl);
-            vh.AddVert (tr);
-            vh.AddVert (bl);
-            vh.AddVert (br);
+            vh.AddVert(tl);
+            vh.AddVert(tr);
+            vh.AddVert(bl);
+            vh.AddVert(br);
         }
     }
 
-    private void AddTriangle(VertexHelper vh,int count)
+    private void AddTriangle(VertexHelper vh, int count)
     {
-        for (int i = 0; i < count; i += 4) {
-            vh.AddTriangle (i + 0, i + 1, i + 2);
-            vh.AddTriangle (i + 1, i + 3, i + 2);
+        for (int i = 0; i < count; i += 4)
+        {
+            vh.AddTriangle(i + 0, i + 1, i + 2);
+            vh.AddTriangle(i + 1, i + 3, i + 2);
         }
     }
 }
 
 public class ChangeWholeWordAlpha : WordAlphaEffectBase
 {
-    protected override void SetColor(List<UIVertex> verts,int currentWordIndex,int updateNum)
+    protected override void SetColor(List<UIVertex> verts, int currentWordIndex, int updateNum)
     {
-        for (int i = (currentWordIndex - 1)*6; i < currentWordIndex*6 && i<verts.Count; i++)
+        for (int i = (currentWordIndex - 1) * 6; i < currentWordIndex * 6 && i < verts.Count; i++)
         {
             UIVertex vertex = verts[i];
             Color temp = vertex.color;
@@ -255,41 +262,42 @@ public class ChangeWholeWordAlpha : WordAlphaEffectBase
             vertex.color = temp;
             verts[i] = vertex;
         }
-        
+
     }
-    
-    public override void ModifyMesh(VertexHelper vh,int currentWordIndex,int updateNum)
+
+    public override void ModifyMesh(VertexHelper vh, int currentWordIndex, int updateNum)
     {
         List<UIVertex> verts = new List<UIVertex>();
         vh.GetUIVertexStream(verts);
         vh.Clear();
-        SetColor(verts,currentWordIndex,updateNum);
+        SetColor(verts, currentWordIndex, updateNum);
 
         AddVert(vh, verts, currentWordIndex * 6);
-        AddTriangle(vh, currentWordIndex*4);
+        AddTriangle(vh, currentWordIndex * 4);
     }
-    
-    private void AddVert(VertexHelper vh,List<UIVertex> verts,int count)
+
+    private void AddVert(VertexHelper vh, List<UIVertex> verts, int count)
     {
-        for (int i = 0; i < count; i+=6)
+        for (int i = 0; i < count; i += 6)
         {
             var tl = verts[i + 0];
             var tr = verts[i + 1];
             var bl = verts[i + 4];
             var br = verts[i + 3];
 
-            vh.AddVert (tl);
-            vh.AddVert (tr);
-            vh.AddVert (bl);
-            vh.AddVert (br);
+            vh.AddVert(tl);
+            vh.AddVert(tr);
+            vh.AddVert(bl);
+            vh.AddVert(br);
         }
     }
 
-    private void AddTriangle(VertexHelper vh,int count)
+    private void AddTriangle(VertexHelper vh, int count)
     {
-        for (int i = 0; i < count; i += 4) {
-            vh.AddTriangle (i + 0, i + 1, i + 2);
-            vh.AddTriangle (i + 1, i + 3, i + 2);
+        for (int i = 0; i < count; i += 4)
+        {
+            vh.AddTriangle(i + 0, i + 1, i + 2);
+            vh.AddTriangle(i + 1, i + 3, i + 2);
         }
     }
 }
@@ -301,20 +309,20 @@ public class LeftToRightAlpha : WordAlphaEffectBase
         vh.GetUIVertexStream(verts);
 
         int count = currentWordIndex * 6;
-        if (verts.Count == 0 || verts.Count < count) 
+        if (verts.Count == 0 || verts.Count < count)
             return;
 
         vh.Clear();
 
-        
-        SetColor(verts,currentWordIndex,updateNum);
+
+        SetColor(verts, currentWordIndex, updateNum);
         AddVert(vh, verts, count);
         AddTriangle(vh, count);
     }
 
-    private void AddVert(VertexHelper vh,List<UIVertex> verts,int count)
+    private void AddVert(VertexHelper vh, List<UIVertex> verts, int count)
     {
-        for (int i = 0; i < count; i+=6)
+        for (int i = 0; i < count; i += 6)
         {
             var tl = verts[i + 0];
             var tr = verts[i + 1];
@@ -323,56 +331,57 @@ public class LeftToRightAlpha : WordAlphaEffectBase
             var ct = GetCenterVertex(verts[i + 0], verts[i + 1]);
             var cb = GetCenterVertex(verts[i + 3], verts[i + 4]);
 
-            vh.AddVert (tl);
-            vh.AddVert (tr);
-            vh.AddVert (bl);
-            vh.AddVert (br);
-            vh.AddVert (ct);
-            vh.AddVert (cb);
+            vh.AddVert(tl);
+            vh.AddVert(tr);
+            vh.AddVert(bl);
+            vh.AddVert(br);
+            vh.AddVert(ct);
+            vh.AddVert(cb);
         }
 
     }
 
-    private void AddTriangle(VertexHelper vh,int count)
+    private void AddTriangle(VertexHelper vh, int count)
     {
-        for (int i = 0; i < count; i += 6) {
-            vh.AddTriangle (i + 0, i + 4, i + 2);
-            vh.AddTriangle (i + 4, i + 5, i + 2);
-            vh.AddTriangle (i + 4, i + 1, i + 5);
-            vh.AddTriangle (i + 1, i + 3, i + 5);
+        for (int i = 0; i < count; i += 6)
+        {
+            vh.AddTriangle(i + 0, i + 4, i + 2);
+            vh.AddTriangle(i + 4, i + 5, i + 2);
+            vh.AddTriangle(i + 4, i + 1, i + 5);
+            vh.AddTriangle(i + 1, i + 3, i + 5);
         }
     }
 
-    protected override void SetColor(List<UIVertex> verts,int currentWordIndex,int updateNum)
+    protected override void SetColor(List<UIVertex> verts, int currentWordIndex, int updateNum)
     {
-        int halfTimes = _wordUpdateTimes*2 / 3;
-        currentWordIndex = (currentWordIndex - 1)*6;
+        int halfTimes = _wordUpdateTimes * 2 / 3;
+        currentWordIndex = (currentWordIndex - 1) * 6;
         if (updateNum < halfTimes)
         {
             //last
-            SetColor(verts, currentWordIndex+1-6, _alphaOffset, updateNum+halfTimes);
-            SetColor(verts, currentWordIndex+3-6, _alphaOffset, updateNum+halfTimes);
-            
-            //hide
-            SetColor(verts, currentWordIndex+1, 0, updateNum);
-            SetColor(verts, currentWordIndex+3, 0, updateNum);
-            
-            //show
-            SetColor(verts, currentWordIndex+0, _alphaOffset, updateNum);
-            SetColor(verts, currentWordIndex+4, _alphaOffset, updateNum);
+            SetColor(verts, currentWordIndex + 1 - 6, _alphaOffset, updateNum + halfTimes);
+            SetColor(verts, currentWordIndex + 3 - 6, _alphaOffset, updateNum + halfTimes);
 
-            
+            //hide
+            SetColor(verts, currentWordIndex + 1, 0, updateNum);
+            SetColor(verts, currentWordIndex + 3, 0, updateNum);
+
+            //show
+            SetColor(verts, currentWordIndex + 0, _alphaOffset, updateNum);
+            SetColor(verts, currentWordIndex + 4, _alphaOffset, updateNum);
+
+
         }
         else
         {
-            SetColor(verts, currentWordIndex+1, _alphaOffset, updateNum-halfTimes);
-            SetColor(verts, currentWordIndex+3, _alphaOffset, updateNum-halfTimes);
+            SetColor(verts, currentWordIndex + 1, _alphaOffset, updateNum - halfTimes);
+            SetColor(verts, currentWordIndex + 3, _alphaOffset, updateNum - halfTimes);
         }
     }
 
-    private void SetColor(List<UIVertex> verts,int index,float alphaOffset,int updateNum)
+    private void SetColor(List<UIVertex> verts, int index, float alphaOffset, int updateNum)
     {
-        if(index <0 || index >= verts.Count)
+        if (index < 0 || index >= verts.Count)
             return;
         UIVertex vertex = verts[index];
         Color temp = vertex.color;
@@ -381,7 +390,7 @@ public class LeftToRightAlpha : WordAlphaEffectBase
         vertex.color = temp;
         verts[index] = vertex;
     }
-    
+
     private UIVertex GetCenterVertex(UIVertex left, UIVertex right)
     {
         UIVertex center = new UIVertex();

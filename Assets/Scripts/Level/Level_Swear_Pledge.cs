@@ -36,7 +36,7 @@ public class Level_Swear_Pledge : MonoBehaviour
         baseNum = SaveData.Data.levelIndex / 10f + 1;
         moveSpeed = originMoveSpeed = (baseSpeed - SaveData.Data.levelIndex / 15f) * SaveData.Data.pledgeSpeed;
         progressSpeed = originProgressSpeed = (baseSpeed * 10 / SaveData.Data.levelIndex + 2) * SaveData.Data.pledgeSpeed;
-        progress = 0;
+        Progress = 0;
         MaskSize();
         selfLightSize = 0;
         StartCoroutine(GenericTools.DelayFun_Cor(0.5f, SelfLight, null));
@@ -48,6 +48,15 @@ public class Level_Swear_Pledge : MonoBehaviour
     /// 0-100
     /// </summary>
     private float progress = 0;
+    private float Progress
+    {
+        get { return progress; }
+        set
+        {
+            progress = value;
+            GenericMsg<float>.Trigger(GenericSign.level_swear, progress);
+        }
+    }
     private float progressSpeed = 10;
     private float originProgressSpeed;
     private float baseNum;
@@ -63,10 +72,10 @@ public class Level_Swear_Pledge : MonoBehaviour
 
         if (InputSingleton.Instance.Jump)
         {
-            progress += progressSpeed * Time.fixedDeltaTime;
+            Progress += progressSpeed * Time.fixedDeltaTime;
             MaskSize();
         }
-        if (progress >= 100)
+        if (Progress >= 100)
         {
             GenericMsg.Trigger(GenericSign.level_swear_end);
         }
@@ -77,20 +86,20 @@ public class Level_Swear_Pledge : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.P))
         {
-            progress = 100;
+            Progress = 100;
         }
     }
 #endif
 
     private Coroutine cor1, cor2, cor3;
-    private List<GameObject> hurts = new List<GameObject>();
+    //private List<GameObject> hurts = new List<GameObject>();
 
     public void CollEmo(Level_Swear_Emotion emo)
     {
         Debug.Log("coll emo :" + emo.selfIndex);
 
-        float originProgress = progress;
-        progress -= 5;
+        float originProgress = Progress;
+        Progress -= 5;
         switch (emo.selfIndex)
         {
             case 0:
@@ -119,12 +128,12 @@ public class Level_Swear_Pledge : MonoBehaviour
                 }, () => cor3 = null);
                 break;
             case 3:
-                progress -= 1 + baseNum / 2;
+                Progress -= 1 + baseNum / 2;
                 break;
         }
-        if (progress < 0) progress = 0;
+        if (Progress < 0) Progress = 0;
 
-        SplitEmoAndSelf(emo, originProgress - progress);
+        SplitEmoAndSelf(emo, originProgress - Progress);
 
         MaskSize();
 
@@ -134,13 +143,15 @@ public class Level_Swear_Pledge : MonoBehaviour
     {
         var emoSize = new Vector2(emo.sprr.sprite.texture.width, emo.sprr.sprite.texture.height) / 100;
         var rect = new Rect((Vector2)emo.transform.position - emoSize / 2, emoSize);
-        var go = SpriteExploder.GenerateTriangularPieces(emo.sprr, rect, Color.red);
+        var go = SpriteExploder.GenerateTriangularPieces(emo.sprr, rect, emo.sprr.color);
+        go.transform.parent = transform.parent;
 
         subSize = subSize * (maskMaxSize - 0.7f) / 100;
         var bodysprr = body.GetComponent<SpriteRenderer>();
         Vector2 size = new Vector2(subSize, emo.sprr.sprite.texture.height / 100f);
         Vector2 center = transform.position + Vector3.right * (maskTrs.localScale.x / 2 - subSize / 2);
         var go2 = SpriteExploder.GenerateTriangularPieces(bodysprr, new Rect(center - size / 2, size), Color.white);
+        go2.transform.parent = transform.parent;
 
         var centerPos = emo.transform.position;
         float[] pieceDis = new float[go2.transform.childCount];
@@ -148,6 +159,7 @@ public class Level_Swear_Pledge : MonoBehaviour
         {
             pieceDis[i] = (go2.transform.GetChild(i).position - centerPos).magnitude;
         }
+
         const float costTime = 1f;
         GenericTools.DelayFun(costTime, (float f) =>
         {
@@ -183,17 +195,17 @@ public class Level_Swear_Pledge : MonoBehaviour
     }
     private void MaskSize()
     {
-        float scaleX = selfLightSize + (progress * (maskMaxSize - 0.7f)) / 100;
+        float scaleX = selfLightSize + (Progress * (maskMaxSize - 0.7f)) / 100;
         maskTrs.localScale = new Vector3(scaleX, 1, 1);
         body.localPosition = new Vector3(maskMaxSize / 2 - scaleX / 2, 0, 0);
     }
 
-    private void OnDisable()
-    {
-        foreach (var item in hurts)
-        {
-            Destroy(item);
-        }
-        hurts.Clear();
-    }
+    //private void OnDisable()
+    //{
+    //    foreach (var item in hurts)
+    //    {
+    //        Destroy(item);
+    //    }
+    //    hurts.Clear();
+    //}
 }

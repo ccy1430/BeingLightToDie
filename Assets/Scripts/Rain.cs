@@ -67,6 +67,7 @@ public class Rain : MonoBehaviour
     {
         var rd = Instantiate(rainDrop, transform).GetComponent<RainDrop>();
         rd.belongPool = rainPool;
+        rd.CreatInit();
         DropOne(rd);
         return rd;
     }

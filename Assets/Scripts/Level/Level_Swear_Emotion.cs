@@ -38,8 +38,8 @@ public class Level_Swear_Emotion : MonoBehaviour
         sprr.sprite = sprites[selfIndex];
         //随机取一个角度 形成射线 反算轨迹
         var angle = Random.Range(-30, 90);
+        transform.localRotation = Quaternion.Euler(0, 0, angle > 30 ? angle - 60 : angle);
         if (angle > 30) angle += 120;
-        transform.localRotation = Quaternion.Euler(0, 0, angle);
         Vector2 v2 = Quaternion.Euler(0, 0, angle) * Vector3.right;
         var pos = pledge.transform.position;
         moveSpeed += speedAcce * SaveData.Data.levelIndex / 100f;

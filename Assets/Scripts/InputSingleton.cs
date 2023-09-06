@@ -22,13 +22,12 @@ public class InputSingleton : MonoBehaviour
             return instance;
         }
     }
-
-    private bool updateonce = false;
-    private int input_lr = 0;
-    private int input_ud = 0;
-    //private bool input_jumps = false;
-    private bool input_jump = false;
-    private bool input_click = false;
+    
+    [SerializeField]private bool updateonce = false;
+    [SerializeField]private int input_lr = 0;
+    [SerializeField]private int input_ud = 0;
+    [SerializeField]private bool input_jump = false;
+    [SerializeField]private bool input_click = false;
     public int LR
     {
         get
@@ -73,6 +72,7 @@ public class InputSingleton : MonoBehaviour
         {
             input_click = true;
         }
+        //Debug.Log($"{input_jump} {input_lr} {input_ud} {input_click}");
 #elif UNITY_ANDROID
         var touches = Input.touches;
         foreach (var item in touches)
@@ -88,8 +88,8 @@ public class InputSingleton : MonoBehaviour
                 float suby = item.position.y - item.rawPosition.y;
                 if (item.phase != TouchPhase.Ended)
                 {
-                    if (subx > 50) input_ud = 1;
-                    else if (subx < -50) input_ud = -1;
+                    if (suby > 50) input_ud = 1;
+                    else if (suby < -50) input_ud = -1;
                 }
             }
             else

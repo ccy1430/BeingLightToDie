@@ -123,15 +123,6 @@ public partial class Player : MonoBehaviour
                 }
                 speed_now.y = Mathf.Clamp(speed_now.y - speed_ver_acce, speed_limit_l.y, speed_limit_r.y);
                 break;
-            case JumpState.jumpending:
-                speed_now.x *=0.9f;
-                jumpframes++;
-                if (jumpframes >= 15)
-                {
-                    _JumpState = JumpState.idle;
-                    jumpframes = 0;
-                }
-                break;
         }
 
         canStand = CanStand();
@@ -183,5 +174,6 @@ public partial class Player : MonoBehaviour
         speed_finalAdd = Vector3.zero;
         js = JumpState.none;
         _JumpState = JumpState.idle;
+        canStand = true;
     }
 }

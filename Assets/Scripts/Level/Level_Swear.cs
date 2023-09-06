@@ -68,6 +68,12 @@ public class Level_Swear : MonoBehaviour
                 emosPool.EnPool(item);
             }
         }
+        foreach (Transform item in transform)
+        {
+            if (item.gameObject.activeSelf) item.gameObject.SetActive(false);
+        }
+
+        AudioManager.Instance.PlayAudio("clock");
     }
 
     private void OnDestroy()

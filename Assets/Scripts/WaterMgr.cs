@@ -10,15 +10,19 @@ public class WaterMgr : MonoBehaviour
 
     public GameObject horWaterPrefab;
     public GameObject verWaterPrefab;
+    public GameObject particlePrefab;
     private int[,] waterHorIndex = new int[GameConfig.mapWidth, GameConfig.mapHeight + 1];
     private List<Water_hor> horWaterList = new List<Water_hor>();
     private List<Water_ver> verWaterList = new List<Water_ver>();
+    private GenericPool<ParticleSystem> horWaterPool;
 
 
     private void Awake()
     {
         if (Instance != null) Destroy(Instance.gameObject);
         Instance = this;
+        horWaterPool = new GenericPool<ParticleSystem>(
+            () => { return Instantiate(particlePrefab, transform).GetComponent<ParticleSystem>(); }, null, null);
         GenericMsg<TileBase[]>.AddReceiver(GenericSign.loadLevel, CreatWater);
     }
     private void OnDestroy()
@@ -115,7 +119,7 @@ public class WaterMgr : MonoBehaviour
             int lrRadian = 3;
             if (HadTile(horwater[i].x - 1, horwater[i].y)) lrRadian -= 1;
             if (HadTile(horwater[i + 1].x + 1, horwater[i + 1].y)) lrRadian -= 2;
-            newWaterHor.Init(left - mid, right - mid, lrRadian);
+            newWaterHor.Init(left - mid, right - mid, lrRadian, horWaterPool);
             horWaterList.Add(newWaterHor);
             for (int x = horwater[i].x; x <= horwater[i + 1].x; x++)
             {

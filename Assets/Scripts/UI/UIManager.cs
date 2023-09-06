@@ -54,17 +54,30 @@ public class UIManager : MonoBehaviour
 
     public void ShowLevelText(int level, System.Action callBack)
     {
-        panel_ingame.SetActive(false);
         int indexOfLevel = System.Array.IndexOf(levelPointers, level);
         if (indexOfLevel == -1) callBack?.Invoke();
         else
         {
+            panel_ingame.SetActive(false);
             t_levelword.text = levelwords[indexOfLevel];
-            wordShowEffect.AddCompleteListener(() => StartCoroutine(ShowTextEnd(callBack)));
+            StartCoroutine(SkipTextClick());
+            wordShowEffect.AddOnceCompleteListener(() => StartCoroutine(ShowTextEnd(callBack)));
         }
+    }
+    private IEnumerator SkipTextClick()
+    {
+        while (true)
+        {
+            if (InputSingleton.Instance.Click) break;
+            yield return null;
+        }
+
+        wordShowEffect.Stop();
     }
     private IEnumerator ShowTextEnd(System.Action callBack)
     {
+        StopCoroutine(SkipTextClick());
+        yield return null;
         while (true)
         {
             if (InputSingleton.Instance.Click) break;
@@ -87,7 +100,6 @@ public class UIManager : MonoBehaviour
         {
             SaveData.Data.levelIndex = 1;
             SaveData.Save();
-            panel_start.SetActive(false);
             ShowLevelText(0, () => GenericMsg.Trigger(GenericSign.level_swear));
             return;
         }
@@ -95,6 +107,18 @@ public class UIManager : MonoBehaviour
     }
     private void StartGameWithLevelIndex(int levelIndex)
     {
+        GenericMsg<System.Action>.Trigger(GenericSign.uiInterfaceChange, () =>
+        {
+            panel_choose.SetActive(false);
+            panel_ingame.SetActive(true);
+            SaveData.Data.levelIndex = levelIndex + 1;
+            SaveData.Save();
+            if (levelIndex == 0)
+            {
+                ShowLevelText(0, () => GenericMsg.Trigger(GenericSign.level_swear));
+            }
+            else GenericMsg.Trigger(GenericSign.level_swear);
+        });
     }
     public void Click_BackMenu()
     {
@@ -120,13 +144,12 @@ public class UIManager : MonoBehaviour
             var go = Instantiate(levelbtnPrefab, panel_choose.transform);
             go.transform.localPosition = new Vector3(i * 240, i * -90);
             var tempbtn = go.GetComponent<Button>();
-            int tempi = i + 1;
+            int tempi = i;
             tempbtn.onClick.AddListener(() =>
-            {//todo add ahpla tranf
-                panel_choose.SetActive(false);
+            {
                 StartGameWithLevelIndex(tempi);
             });
-            tempbtn.GetComponentInChildren<Text>().text = tempi.ToString();
+            tempbtn.GetComponentInChildren<Text>().text = (i + 1).ToString();
             levelsBtns.Add(go.transform);
         }
     }

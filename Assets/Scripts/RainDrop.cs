@@ -12,7 +12,7 @@ public class RainDrop : MonoBehaviour
     private Vector3 dropStep;
     private Vector3 originScale;
 
-    private void Awake()
+    public void CreatInit()
     {
         self_sp = GetComponent<SpriteRenderer>();
         originColor = self_sp.color;
