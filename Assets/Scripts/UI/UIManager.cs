@@ -132,6 +132,17 @@ public class UIManager : MonoBehaviour
     {
         Application.Quit();
     }
+    public void Click_ResetHelp()
+    {
+        var data = SaveData.Data;
+
+        data.playerLightSize = 1;
+        data.rememerCount = 16;
+        data.hadHurt = true;
+        data.pledgeSpeed = 1;
+        data.jumpPledge = false;
+        SaveData.Save();
+    }
 
     #region choose panel
     [Header("Choose Panel")]

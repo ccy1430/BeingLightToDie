@@ -22,20 +22,20 @@ public class InputSingleton : MonoBehaviour
             return instance;
         }
     }
-    
-    [SerializeField]private bool updateonce = false;
-    [SerializeField]private int input_lr = 0;
-    [SerializeField]private int input_ud = 0;
-    [SerializeField]private bool input_jump = false;
-    [SerializeField]private bool input_click = false;
-    public int LR
+
+    [SerializeField] private bool updateonce = false;
+    [SerializeField] private float input_lr = 0;
+    [SerializeField] private float input_ud = 0;
+    [SerializeField] private bool input_jump = false;
+    [SerializeField] private bool input_click = false;
+    public float LR
     {
         get
         {
             return input_lr;
         }
     }
-    public int UD
+    public float UD
     {
         get
         {
@@ -68,35 +68,35 @@ public class InputSingleton : MonoBehaviour
         else if (Input.GetKey(KeyCode.DownArrow)) input_ud = -1;
 
         input_jump = Input.GetKey(KeyCode.Space);
-        if (Input.GetMouseButtonDown(0))
+        if (Input.anyKeyDown)
         {
             input_click = true;
         }
         //Debug.Log($"{input_jump} {input_lr} {input_ud} {input_click}");
-#elif UNITY_ANDROID
+        //#elif UNITY_ANDROID
         var touches = Input.touches;
         foreach (var item in touches)
         {
-            if (item.rawPosition.x < Screen.width / 2) 
+            if (item.rawPosition.x < Screen.width / 2)
             {
                 float subx = item.position.x - item.rawPosition.x;
                 if (item.phase != TouchPhase.Ended)
                 {
-                    if (subx > 50) input_lr = 1;
-                    else if (subx < -50) input_lr = -1;
+                    if (subx > 50) input_lr = Mathf.Min(1, (subx - 50) / 150f);
+                    else if (subx < -50) input_lr = -Mathf.Min(1, (subx + 50) / -150f);
                 }
                 float suby = item.position.y - item.rawPosition.y;
                 if (item.phase != TouchPhase.Ended)
                 {
-                    if (suby > 50) input_ud = 1;
-                    else if (suby < -50) input_ud = -1;
+                    if (suby > 50) input_ud = Mathf.Min(1, (suby - 50) / 150f);
+                    else if (suby < -50) input_ud = -Mathf.Min(1, (suby + 50) / -150f);
                 }
             }
             else
             {
                 input_jump = true;
             }
-            if (item.tapCount == 1)
+            if (item.tapCount == 1 && item.phase == TouchPhase.Began)
             {
                 input_click = true;
             }

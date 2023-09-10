@@ -60,7 +60,8 @@ public partial class Player : MonoBehaviour
     }
     private void ActionUpdate()
     {
-        input_lr = InputSingleton.Instance.LR;
+        float input_lr_f = InputSingleton.Instance.LR;
+        input_lr = input_lr_f > 0 ? 1 : (input_lr_f < 0 ? -1 : 0);
         //if (InputSingleton.Instance.Jumps) whenStartJump();
         input_jump = InputSingleton.Instance.Jump;
     }
