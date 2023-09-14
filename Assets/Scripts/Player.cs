@@ -25,7 +25,7 @@ public partial class Player : MonoBehaviour
     [Space]
     public TileBase selfPosTileBase;
 
-    private const float lightBaseSize = 1.5f;
+    private const float lightBaseSize = 2f;
     private void Awake()
     {
         light2d = GetComponentInChildren<UnityEngine.Rendering.Universal.Light2D>();
@@ -148,6 +148,7 @@ public partial class Player : MonoBehaviour
     private void TriggerDie()
     {
         GenericMsg<PathData>.Trigger(GenericSign.playerDie, cachePath);
+        GenericMsg.Trigger(GenericSign.startLevel);
     }
     public void UnAcive()
     {

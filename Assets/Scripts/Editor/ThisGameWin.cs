@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEngine.Tilemaps;
+using System;
 
 public class ThisGameWin : EditorWindow
 {
@@ -58,6 +59,11 @@ public class ThisGameWin : EditorWindow
         if (GUILayout.Button("运行时跳过关卡"))
         {
             JumpLevel();
+        }
+        GUILayout.Space(20);
+        if (GUILayout.Button("截图"))
+        {
+            ScreenShot();
         }
     }
     const string frontPath = "Assets/Resources/Levels/";
@@ -127,5 +133,10 @@ public class ThisGameWin : EditorWindow
         {
             player.ThroughLevel();
         }
+    }
+    private void ScreenShot()
+    {
+        var time = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds();
+        ScreenCapture.CaptureScreenshot(time.ToString() + ".png");
     }
 }

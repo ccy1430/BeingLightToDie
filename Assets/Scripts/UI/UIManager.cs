@@ -141,6 +141,14 @@ public class UIManager : MonoBehaviour
         data.hadHurt = true;
         data.pledgeSpeed = 1;
         data.jumpPledge = false;
+        data.remererLightSize = 1;
+        SaveData.Save();
+    }
+    public void Click_ResetFunny()
+    {
+        var data = SaveData.Data;
+
+        data.remererLightRandColor = false;
         SaveData.Save();
     }
 
@@ -223,34 +231,6 @@ public class UIManager : MonoBehaviour
             }
         }
         cacheCor = null;
-    }
-    #endregion
-
-    #region HelpPanel
-    public void OnLightSizeChange(float f)
-    {
-        SaveData.Data.playerLightSize = f;
-        SaveData.Save();
-    }
-    public void OnLightCountChange(float f)
-    {
-        SaveData.Data.rememerCount = Mathf.FloorToInt(f);
-        SaveData.Save();
-    }
-    public void OnHurtSwitchChange(bool b)
-    {
-        SaveData.Data.hadHurt = b;
-        SaveData.Save();
-    }
-    public void OnPledgeSpeedChange(float f)
-    {
-        SaveData.Data.pledgeSpeed = f;
-        SaveData.Save();
-    }
-    public void OnJumoPledgeChange(bool b)
-    {
-        SaveData.Data.jumpPledge = b;
-        SaveData.Save();
     }
     #endregion
 }

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using System.Net.NetworkInformation;
 
 public partial class Player : MonoBehaviour
 {
@@ -67,6 +68,19 @@ public partial class Player : MonoBehaviour
     }
     private void ActionFixedUpdate()
     {
+        CanStand();
+        UpdateInputLR();
+        UpdateJumpState();
+        RayCastSpeed();
+        ApplySpeed();
+    }
+
+    private void CanStand()
+    {
+        canStand = Physics2D.BoxCast(transform.position, new Vector2((self_box_h - skin) * 2, 0.1f), 0, Vector2.down, self_box_v, collLayer);
+    }
+    private void UpdateInputLR()
+    {
         int dir = speed_now.x > 0 ? 1 : -1;
         if (input_lr == 0)
         {
@@ -88,7 +102,9 @@ public partial class Player : MonoBehaviour
             }
             speed_now.x = Mathf.Clamp(speed_now.x, speed_limit_l.x, speed_limit_r.x);
         }
-
+    }
+    private void UpdateJumpState()
+    {
         switch (_JumpState)
         {
             case JumpState.idle:
@@ -125,28 +141,13 @@ public partial class Player : MonoBehaviour
                 speed_now.y = Mathf.Clamp(speed_now.y - speed_ver_acce, speed_limit_l.y, speed_limit_r.y);
                 break;
         }
-
-        canStand = CanStand();
-        RayCastSpeed();
-        transform.position += speed_finalAdd;
-
-        cachePath.TryAddSpeed(fixedTime++, speed_finalAdd);
-        //Debug.LogFormat("jumpinput {0}  finalAdd {1}", input_jump, speed_finalAdd);
     }
-
-    bool CanStand()
-    {
-        Vector2 pos = transform.position;
-        RaycastHit2D one;
-        one = Physics2D.BoxCast(pos, new Vector2((self_box_h - skin) * 2, 0.1f), 0, Vector2.down, self_box_v, collLayer);
-        return one;
-    }
-
     private void RayCastSpeed()
     {
         Vector2 pos = transform.position;
         speed_finalAdd = speed_now * Time.fixedDeltaTime;
         if (speed_finalAdd == Vector3.zero) return;
+
         RaycastHit2D one;
         int xmul = speed_now.x > 0 ? 1 : -1;
         float xraydis = self_box_h + speed_finalAdd.x * xmul;
@@ -166,6 +167,12 @@ public partial class Player : MonoBehaviour
             float yhitdis = Mathf.Max(0, two.distance + 0.05f - self_box_v);
             speed_finalAdd.y = yhitdis * ymul;
         }
+    }
+    private void ApplySpeed()
+    {
+        transform.position += speed_finalAdd;
+        cachePath.TryAddSpeed(fixedTime++, speed_finalAdd);
+        //Debug.LogFormat("jumpinput {0}  finalAdd {1}", input_jump, speed_finalAdd);
     }
 
     private void ResetAction()

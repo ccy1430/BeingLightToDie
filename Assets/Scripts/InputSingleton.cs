@@ -73,7 +73,7 @@ public class InputSingleton : MonoBehaviour
             input_click = true;
         }
         //Debug.Log($"{input_jump} {input_lr} {input_ud} {input_click}");
-        //#elif UNITY_ANDROID
+#elif UNITY_ANDROID
         var touches = Input.touches;
         foreach (var item in touches)
         {

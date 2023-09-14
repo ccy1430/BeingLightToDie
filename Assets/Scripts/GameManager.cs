@@ -45,7 +45,7 @@ public class GameManager : MonoBehaviour
         {
             SaveData.Data.levelIndex += 1;
         }
-        else
+        if (SaveData.Data.levelIndex >= GameConfig.maxLevelIndex)
         {
             SaveData.Data.hadChooseLevel = true;
         }

@@ -43,18 +43,16 @@ public static class SaveData
             data = (SaveDataPart)bf.Deserialize(fileStream);
             //关闭文件流
             fileStream.Close();
-            //if (data.version < SaveDataPart.VERSION)
-            //{
-            //    if (data.version < 1)
-            //    {
-            //        data.playerLightSize = 1;
-            //        data.rememerCount = 32;
-            //        data.hadHurt = true;
-            //        data.hadChooseLevel = false;
-            //    }
-            //    data.version = SaveDataPart.VERSION;
-            //    Save();
-            //}
+            if (data.version < SaveDataPart.VERSION)
+            {
+                if (data.version < 2)
+                {
+                    data.remererLightSize = 1;
+                    data.remererLightRandColor = false;
+                }
+                data.version = SaveDataPart.VERSION;
+                Save();
+            }
         }
         else
         {
@@ -73,7 +71,7 @@ public static class SaveData
 [System.Serializable]
 public class SaveDataPart
 {
-    public const int VERSION = 1;
+    public const int VERSION = 2;
 
     public int version = 1;
     //version 0
@@ -87,4 +85,7 @@ public class SaveDataPart
     public bool hadChooseLevel = false;
     public float pledgeSpeed = 1;
     public bool jumpPledge = false;
+    //version 2
+    public float remererLightSize = 1;
+    public bool remererLightRandColor = false;
 }

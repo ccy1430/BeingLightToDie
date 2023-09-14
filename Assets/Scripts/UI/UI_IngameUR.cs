@@ -32,7 +32,7 @@ public class UI_IngameUR : MonoBehaviour
     private void OnGame()
     {
         gameObject.SetActive(true);
-        text.text = "重来";
+        text.text = "下一次";
         swearstate = false;
     }
     public void OnClickSelf()

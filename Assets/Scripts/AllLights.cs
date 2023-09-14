@@ -10,12 +10,14 @@ public class AllLights : MonoBehaviour
     private Queue<GameObject> lightQueue = new Queue<GameObject>(256);
     //成对的light和pathdata
     private List<Light2D> lights = new List<Light2D>();
+    private List<Coroutine> lightFade = new List<Coroutine>();
     private List<PathData> paths = new List<PathData>();
     //已经跑完全程的light
     private HashSet<int> hadClose = new HashSet<int>();
 
     private int fixedIndex = 0;
     private GenericPool<PathData> pathDataPool;
+    private const float baseLightSize = 1.5f;
     private void Awake()
     {
         GenericMsg<PathData>.AddReceiver(GenericSign.playerDie, SetLight);
@@ -57,10 +59,19 @@ public class AllLights : MonoBehaviour
             light = lightQueue.Dequeue();
         }
         light.SetActive(true);
-        lights.Add(light.GetComponent<Light2D>());
+        var l2d = light.GetComponent<Light2D>();
+        if (SaveData.Data.remererLightRandColor)
+        {
+            l2d.color = Color.HSVToRGB(Random.Range(0, 1f), 0.6f, 1);
+        }
+        else
+        {
+            l2d.color = Color.white;
+        }
+        lights.Add(l2d);
+        lightFade.Add(null);
         paths.Add(path);
         ReplayAllLight();
-        GenericMsg.Trigger(GenericSign.startLevel);
     }
 
     private void FixedUpdate()
@@ -71,7 +82,14 @@ public class AllLights : MonoBehaviour
             lights[i].transform.position += (Vector3)paths[i].GetSpeedByTime(fixedIndex);
             if (paths[i].pointer >= paths[i].timestamp.Count)
             {
-                GameTool.CloseLight(lights[i]);
+                float startSize = baseLightSize * SaveData.Data.remererLightSize;
+                const float leftSize = 0.5f;
+                Light2D l2d = lights[i];
+                int temp = i;
+                lightFade[temp] = GenericTools.DelayFun(GameTool.LightTime, (float t) =>
+                {
+                    l2d.pointLightOuterRadius = startSize * (1 - t) + leftSize * t;
+                }, () => lightFade[temp] = null);
                 hadClose.Add(i);
             }
         }
@@ -86,26 +104,21 @@ public class AllLights : MonoBehaviour
         {
             paths[i].pointer = 0;
             lights[i].transform.position = pos;
-            GameTool.OpenLight(lights[i]);
+            GameTool.OpenLight(lights[i], baseLightSize * SaveData.Data.remererLightSize);
         }
     }
     public void RecyleLights()
     {
         lightQueue.Clear();
-        foreach (Transform trs in transform)
+        for (int i = 0; i < lights.Count; i++)
         {
-            lightQueue.Enqueue(trs.gameObject);
-            if (trs.gameObject.activeSelf)
+            lightQueue.Enqueue(lights[i].gameObject);
+            if (lightFade[i] != null)
             {
-                var l2d = trs.gameObject.GetComponent<Light2D>();
-                if (l2d != null)
-                {
-                    if (l2d.pointLightOuterRadius == 1)
-                    {
-                        GameTool.CloseLight(l2d, cb: () => { trs.gameObject.SetActive(false); });
-                    }
-                }
+                GenericTools.StopCoroutine(lightFade[i]);
             }
+            var l2d = lights[i];
+            GameTool.CloseLight(l2d, l2d.pointLightOuterRadius, () => l2d.gameObject.SetActive(false));
         }
         if (pathDataPool != null)
         {
