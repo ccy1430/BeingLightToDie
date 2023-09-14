@@ -22,6 +22,7 @@ public class AllLights : MonoBehaviour
     {
         GenericMsg<PathData>.AddReceiver(GenericSign.playerDie, SetLight);
         GenericMsg.AddReceiver
+            (GenericSign.playerDie, CloseLight)
             (GenericSign.nextLevel, RecyleLights)
             (GenericSign.backMenu, RecyleLights);
         pathDataPool = GenericPool<PathData>.LinkSignPool(GenericSign.playerDie, () =>
@@ -33,6 +34,7 @@ public class AllLights : MonoBehaviour
     {
         GenericMsg<PathData>.DelReceiver(GenericSign.playerDie, SetLight);
         GenericMsg.DelReceiver
+            (GenericSign.playerDie, CloseLight)
             (GenericSign.nextLevel, RecyleLights)
             (GenericSign.backMenu, RecyleLights);
         GenericPool<PathData>.UnLinkSignPool(GenericSign.playerDie);
@@ -73,7 +75,31 @@ public class AllLights : MonoBehaviour
         paths.Add(path);
         ReplayAllLight();
     }
-
+    public void ReplayAllLight()
+    {
+        fixedIndex = 0;
+        hadClose.Clear();
+        Vector3 pos = GameManager.Instance.player.originPos;
+        for (int i = 0; i < paths.Count; i++)
+        {
+            paths[i].pointer = 0;
+            lights[i].transform.position = pos;
+            GameTool.OpenLight(lights[i], baseLightSize * SaveData.Data.remererLightSize);
+        }
+    }
+    private void CloseLight()
+    {
+        for (int i = 0; i < lights.Count; i++)
+        {
+            if (lightFade[i] != null)
+            {
+                GenericTools.StopCoroutine(lightFade[i]);
+                lightFade[i] = null;
+            }
+            var l2d = lights[i];
+            GameTool.CloseLight(l2d, l2d.pointLightOuterRadius);
+        }
+    }
     private void FixedUpdate()
     {
         for (int i = 0; i < paths.Count; i++)
@@ -95,18 +121,7 @@ public class AllLights : MonoBehaviour
         }
         fixedIndex++;
     }
-    public void ReplayAllLight()
-    {
-        fixedIndex = 0;
-        hadClose.Clear();
-        Vector3 pos = GameManager.Instance.player.originPos;
-        for (int i = 0; i < paths.Count; i++)
-        {
-            paths[i].pointer = 0;
-            lights[i].transform.position = pos;
-            GameTool.OpenLight(lights[i], baseLightSize * SaveData.Data.remererLightSize);
-        }
-    }
+
     public void RecyleLights()
     {
         lightQueue.Clear();
@@ -116,6 +131,7 @@ public class AllLights : MonoBehaviour
             if (lightFade[i] != null)
             {
                 GenericTools.StopCoroutine(lightFade[i]);
+                lightFade[i] = null;
             }
             var l2d = lights[i];
             GameTool.CloseLight(l2d, l2d.pointLightOuterRadius, () => l2d.gameObject.SetActive(false));

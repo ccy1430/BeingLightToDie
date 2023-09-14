@@ -73,7 +73,7 @@ public class SaveDataPart
 {
     public const int VERSION = 2;
 
-    public int version = 1;
+    public int version = VERSION;
     //version 0
     //version 1
     public int levelIndex = 0;
