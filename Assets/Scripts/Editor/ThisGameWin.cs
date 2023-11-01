@@ -34,6 +34,7 @@ public class ThisGameWin : EditorWindow
         if (GUILayout.Button("É¾³ý´æµµ"))
         {
             SaveData.Delete();
+            SaveData<InputKeySet>.Delete();
         }
 
         GUILayout.Space(20);

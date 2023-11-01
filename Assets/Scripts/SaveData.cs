@@ -89,3 +89,62 @@ public class SaveDataPart
     public float remererLightSize = 1;
     public bool remererLightRandColor = false;
 }
+public static class SaveData<T> where T : new()
+{
+    private static T data;
+    private static readonly string path = Application.persistentDataPath + $"/{typeof(T)}.save";
+    public static T Data
+    {
+        get
+        {
+            if(data == null)
+            {
+                Load();
+            }
+            return data;
+        }
+    }
+    public static void Save()
+    {
+        //创建一个二进制格式化程序
+        BinaryFormatter bf = new BinaryFormatter();
+        //创建一个文件流
+        FileStream fileStream = File.Create(path);
+        //用二进制格式化程序的序列化方法来序列化Save对象,参数：创建的文件流和需要序列化的对象
+        bf.Serialize(fileStream, data);
+        //关闭流
+        fileStream.Close();
+    }
+    public static void Load()
+    {
+        if (File.Exists(path))
+        {
+            //反序列化过程
+            //创建一个二进制格式化程序
+            BinaryFormatter bf = new BinaryFormatter();
+            //打开一个文件流
+            FileStream fileStream = File.Open(path, FileMode.Open);
+            //调用格式化程序的反序列化方法，将文件流转换为一个Save对象
+            data = (T)bf.Deserialize(fileStream);
+            //关闭文件流
+            fileStream.Close();
+        }
+        else
+        {
+            data = new();
+            Save();
+        }
+    }
+    public static void Reset()
+    {
+        data = new T();
+        Save();
+    }
+    public static void Delete()
+    {
+        if (File.Exists(path))
+        {
+            File.Delete(path);
+        }
+    }
+}

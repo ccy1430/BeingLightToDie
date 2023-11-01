@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -14,6 +15,9 @@ public class InputSingleton : MonoBehaviour
                 var go = new GameObject("InputSingleton");
                 instance = go.AddComponent<InputSingleton>();
                 DontDestroyOnLoad(go);
+#if UNITY_EDITOR || UNITY_STANDALONE_WIN
+                instance.keySet = SaveData<InputKeySet>.Data;
+#endif
             }
             if (!instance.updateonce)
             {
@@ -28,6 +32,10 @@ public class InputSingleton : MonoBehaviour
     [SerializeField] private float input_ud = 0;
     [SerializeField] private bool input_jump = false;
     [SerializeField] private bool input_click = false;
+#if UNITY_EDITOR || UNITY_STANDALONE_WIN
+    private InputKeySet keySet;
+#endif
+
     public float LR
     {
         get
@@ -61,13 +69,13 @@ public class InputSingleton : MonoBehaviour
         input_click = false;
 
 #if UNITY_EDITOR || UNITY_STANDALONE_WIN
-        if (Input.GetKey(KeyCode.RightArrow)) input_lr = 1;
-        else if (Input.GetKey(KeyCode.LeftArrow)) input_lr = -1;
+        if (Input.GetKey(keySet.Key_RIGHT)) input_lr = 1;
+        else if (Input.GetKey(keySet.Key_LEFT)) input_lr = -1;
 
-        if (Input.GetKey(KeyCode.UpArrow)) input_ud = 1;
-        else if (Input.GetKey(KeyCode.DownArrow)) input_ud = -1;
+        if (Input.GetKey(keySet.Key_UP)) input_ud = 1;
+        else if (Input.GetKey(keySet.Key_DOWN)) input_ud = -1;
 
-        input_jump = Input.GetKey(KeyCode.Space);
+        input_jump = Input.GetKey(keySet.Key_JUMP);
         if (Input.anyKeyDown)
         {
             input_click = true;
@@ -111,3 +119,27 @@ public class InputSingleton : MonoBehaviour
         updateonce = false;
     }
 }
+
+#if UNITY_EDITOR || UNITY_STANDALONE_WIN
+[System.Serializable]
+public class InputKeySet
+{
+    public const int VERSION = 0;
+    public int version = 0;
+
+    public const int UP = 0;
+    public const int DOWN = 1;
+    public const int LEFT = 2;
+    public const int RIGHT = 3;
+    public const int JUMP = 4;
+
+    public KeyCode Key_UP { get { return keys[UP]; } }
+    public KeyCode Key_DOWN { get { return keys[DOWN]; } }
+    public KeyCode Key_LEFT { get { return keys[LEFT]; } }
+    public KeyCode Key_RIGHT { get { return keys[RIGHT]; } }
+    public KeyCode Key_JUMP { get { return keys[JUMP]; } }
+
+    public List<string> keyNames = new List<string> { "ÉÏ", "ÏÂ", "×ó", "ÓÒ", "Ìø" };
+    public List<KeyCode> keys = new List<KeyCode> { KeyCode.UpArrow, KeyCode.DownArrow, KeyCode.LeftArrow, KeyCode.RightArrow, KeyCode.Space };
+}
+#endif

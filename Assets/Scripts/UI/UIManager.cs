@@ -144,6 +144,10 @@ public class UIManager : MonoBehaviour
         data.remererLightSize = 1;
         SaveData.Save();
     }
+    public void Click_ResetInputKeySet()
+    {
+        SaveData<InputKeySet>.Reset();
+    }
     public void Click_ResetFunny()
     {
         var data = SaveData.Data;
