@@ -5,11 +5,14 @@ using UnityEngine.UI;
 
 public class UI_IngameUR : MonoBehaviour
 {
-    private Text text;
+    public Text text;
+    public GameObject joyTip;
     private bool swearstate = true;
+    private Button button;
     private void Awake()
     {
         text = GetComponentInChildren<Text>();
+        button = GetComponent<Button>();
     }
     private void OnEnable()
     {
@@ -27,12 +30,14 @@ public class UI_IngameUR : MonoBehaviour
     {
         swearstate = true;
         text.text = "跳过";
+        joyTip.SetActive(Input.GetJoystickNames().Length > 0);
         gameObject.SetActive(SaveData.Data.jumpPledge);
     }
     private void OnGame()
     {
         gameObject.SetActive(true);
-        text.text = "下一次";
+        text.text = "下一次"; 
+        joyTip.SetActive(Input.GetJoystickNames().Length > 0);
         swearstate = false;
     }
     public void OnClickSelf()
@@ -44,6 +49,14 @@ public class UI_IngameUR : MonoBehaviour
         else
         {
             GameManager.Instance.player.DieOnce();
+        }
+        button.OnDeselect(null);
+    }
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.JoystickButton4) || Input.GetKeyDown(KeyCode.JoystickButton5))
+        {
+            OnClickSelf();
         }
     }
 }

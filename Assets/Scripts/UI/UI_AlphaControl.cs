@@ -1,11 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class UI_AlphaControl : MonoBehaviour
 {
     public CanvasGroup canvasGroup;
-    public GameObject eventSystem;
+    public EventSystem eventSystem;
     public float tranTimer = 0.5f;
     private void Awake()
     {
@@ -21,10 +22,10 @@ public class UI_AlphaControl : MonoBehaviour
     }
     private IEnumerator FadeAndShow_IE(System.Action midfun)
     {
-        eventSystem.SetActive(false);
+        eventSystem.sendNavigationEvents = false;
         yield return StartCoroutine(GenericTools.DelayFun_Cor(tranTimer, f => canvasGroup.alpha = 1 - f, null));
         midfun?.Invoke();
         yield return StartCoroutine(GenericTools.DelayFun_Cor(tranTimer, f => canvasGroup.alpha = f, null));
-        eventSystem.SetActive(true);
+        eventSystem.sendNavigationEvents = true;
     }
 }

@@ -76,6 +76,16 @@ public class InputSingleton : MonoBehaviour
         else if (Input.GetKey(keySet.Key_DOWN)) input_ud = -1;
 
         input_jump = Input.GetKey(keySet.Key_JUMP);
+
+        if (Input.GetJoystickNames().Length > 0)
+        {
+            float temp = Input.GetAxisRaw("JoyX");
+            if(temp!= 0) { input_lr = temp; }
+            temp = Input.GetAxisRaw("JoyY");
+            if (temp != 0) input_ud = -temp;
+            input_jump |= Input.GetKey(KeyCode.JoystickButton0) || Input.GetKey(KeyCode.JoystickButton1) || Input.GetKey(KeyCode.JoystickButton2) || Input.GetKey(KeyCode.JoystickButton3);
+        }
+
         if (Input.anyKeyDown)
         {
             input_click = true;

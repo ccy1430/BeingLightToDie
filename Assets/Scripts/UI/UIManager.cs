@@ -105,21 +105,7 @@ public class UIManager : MonoBehaviour
         }
         GenericMsg.Trigger(GenericSign.level_swear);
     }
-    private void StartGameWithLevelIndex(int levelIndex)
-    {
-        GenericMsg<System.Action>.Trigger(GenericSign.uiInterfaceChange, () =>
-        {
-            panel_choose.SetActive(false);
-            panel_ingame.SetActive(true);
-            SaveData.Data.levelIndex = levelIndex + 1;
-            SaveData.Save();
-            if (levelIndex == 0)
-            {
-                ShowLevelText(0, () => GenericMsg.Trigger(GenericSign.level_swear));
-            }
-            else GenericMsg.Trigger(GenericSign.level_swear);
-        });
-    }
+
     public void Click_BackMenu()
     {
         GenericMsg.Trigger(GenericSign.backMenu);
@@ -155,86 +141,4 @@ public class UIManager : MonoBehaviour
         data.remererLightRandColor = false;
         SaveData.Save();
     }
-
-    #region choose panel
-    [Header("Choose Panel")]
-    public GameObject levelbtnPrefab;
-    private readonly List<Transform> levelsBtns = new List<Transform>();
-    public void InitChoosePanel()
-    {
-        for (int i = levelsBtns.Count; i < GameConfig.maxLevelIndex; i++)
-        {
-            var go = Instantiate(levelbtnPrefab, panel_choose.transform);
-            go.transform.localPosition = new Vector3(i * 240, i * -90);
-            var tempbtn = go.GetComponent<Button>();
-            int tempi = i;
-            tempbtn.onClick.AddListener(() =>
-            {
-                StartGameWithLevelIndex(tempi);
-            });
-            tempbtn.GetComponentInChildren<Text>().text = (i + 1).ToString();
-            levelsBtns.Add(go.transform);
-        }
-    }
-    private readonly Vector2 chooseLevelDir = new Vector2(8, -3).normalized;
-    private float dragPower;
-    private Coroutine cacheCor;
-    public void OnChoosePanelDragBegin(UnityEngine.EventSystems.BaseEventData data)
-    {
-        dragPower = 0;
-        if (cacheCor != null)
-        {
-            StopCoroutine(cacheCor);
-            cacheCor = null;
-        }
-        //Debug.Log("<color=red>drag begin</color>");
-    }
-    public void OnChoosePanelDrag(UnityEngine.EventSystems.BaseEventData data)
-    {
-        var pointerEventData = data as UnityEngine.EventSystems.PointerEventData;
-        Vector2 delta = pointerEventData.delta;
-        float dis = Vector2.Dot(delta, chooseLevelDir);
-        dragPower = dis;
-        DragingChoosePanel(dis);
-        //Debug.Log("<color=green>drag</color>");
-    }
-    private void DragingChoosePanel(float dis)
-    {
-        if (dis < 0 && levelsBtns[^1].localPosition.x + dis * chooseLevelDir.x < 0)
-        {
-            dis = -levelsBtns[^1].localPosition.x / chooseLevelDir.x;
-        }
-        else if (dis > 0 && levelsBtns[0].localPosition.x + dis * chooseLevelDir.x > 0)
-        {
-            dis = -levelsBtns[0].localPosition.x / chooseLevelDir.x;
-        }
-        Vector3 step = chooseLevelDir * dis;
-        foreach (var trs in levelsBtns)
-        {
-            trs.localPosition += step;
-        }
-    }
-    public void OnChoosePanelDragEnd(UnityEngine.EventSystems.BaseEventData data)
-    {
-        cacheCor = StartCoroutine(DragInertia());
-        //Debug.Log("<color=red>drag end</color>");
-    }
-    private IEnumerator DragInertia()
-    {
-        int sign = dragPower >= 0 ? 1 : -1;
-        dragPower *= sign;
-        if (dragPower != 0)
-        {
-            while (dragPower > 0)
-            {
-                //Debug.Log("<color=blue>inertia</color>");
-                DragingChoosePanel(dragPower * sign);
-                dragPower *= 0.98f;
-                if (dragPower < 0.01f) dragPower = 0;
-                yield return null;
-            }
-        }
-        cacheCor = null;
-    }
-    #endregion
 }

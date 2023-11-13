@@ -11,15 +11,15 @@ public class GuideText : MonoBehaviour
 #if UNITY_ANDROID&&!UNITY_EDITOR
         "滑动左边屏幕移动",
         "点击右边屏幕跳跃",
-        "长按右边屏幕增加跳跃高度",
+        "长按右边屏幕跳的更高",
         "长按右边屏幕坚定誓言",
         "滑动左边屏幕躲避杂念",
 #else
         "方向键移动",
         "空格键跳跃",
-        "长按空格增加跳跃高度",
-        "长按空格坚定誓言",
-        "方向键躲避杂念",
+        "长按跳跃键跳的更高",
+        "长按跳跃键坚定誓言",
+        "移动躲避杂念",
 #endif
     };
     void Start()
@@ -30,8 +30,35 @@ public class GuideText : MonoBehaviour
             (GenericSign.level_swear, ShowSwear);
     }
 
+    private void CheckGuide()
+    {
+#if UNITY_EDITOR || UNITY_STANDALONE_WIN
+        if (Input.GetJoystickNames().Length > 0)
+        {
+            guides[1] = "ABXY键跳跃";
+            guides[3] = "长按ABXY键坚定誓言";
+        }
+        else
+        {
+            var keyset = SaveData<InputKeySet>.Data;
+            if (keyset.Key_UP != KeyCode.UpArrow ||
+                keyset.Key_DOWN != KeyCode.DownArrow ||
+                keyset.Key_LEFT != KeyCode.LeftArrow ||
+                keyset.Key_RIGHT != KeyCode.RightArrow)
+            {
+                guides[0] = $"{keyset.Key_UP} {keyset.Key_DOWN} {keyset.Key_LEFT} {keyset.Key_RIGHT} 移动";
+            }
+            if (keyset.Key_JUMP != KeyCode.Space)
+            {
+                guides[1] = $"{keyset.Key_JUMP}键跳跃";
+            }
+        }
+#endif
+    }
+
     private void IsShowGuideText()
     {
+        CheckGuide();
         int curlevel = SaveData.Data.levelIndex - 1;
         if (curlevel < 3)
         {
@@ -41,6 +68,7 @@ public class GuideText : MonoBehaviour
     }
     private void ShowSwear()
     {
+        CheckGuide();
         int curlevel = SaveData.Data.levelIndex - 1;
         if (curlevel < 2)
         {
