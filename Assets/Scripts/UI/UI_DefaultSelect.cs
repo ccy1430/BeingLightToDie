@@ -8,6 +8,7 @@ public class UI_DefaultSelect : MonoBehaviour
 {
     public GameObject defaultSelectHander;
 
+#if UNITY_EDITOR || UNITY_STANDALONE_WIN
     private void OnEnable()
     {
         EventSystem.current.SetSelectedGameObject(defaultSelectHander);
@@ -20,4 +21,5 @@ public class UI_DefaultSelect : MonoBehaviour
             EventSystem.current.SetSelectedGameObject(defaultSelectHander);
         }
     }
+#endif
 }

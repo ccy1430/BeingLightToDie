@@ -26,11 +26,12 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _FallSpeed: 0.5
+    - _FallSpeed: 1
     - _Seed: 1.56
+    - _Size: 3
     - _XScale: 2
     - _YScale: 0.2
     m_Colors:
-    - _BaseColor: {r: 0.184, g: 0, b: 0, a: 1}
-    - _DeepColor: {r: 0, g: 0, b: 0, a: 0}
+    - _BaseColor: {r: 0.5764706, g: 0.4392157, b: 0.85882354, a: 1}
+    - _DeepColor: {r: 1, g: 0.7529412, b: 0.79607844, a: 1}
   m_BuildTextureStacks: []

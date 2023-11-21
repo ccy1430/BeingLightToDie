@@ -19,6 +19,7 @@ public class UI_IngameUR : MonoBehaviour
         GenericMsg.AddReceiver
             (GenericSign.level_swear_end, OnGame)
             (GenericSign.level_swear, OnSwear);
+        joyTip.SetActive(Input.GetJoystickNames().Length > 0);
     }
     private void OnDestroy()
     {
@@ -30,14 +31,12 @@ public class UI_IngameUR : MonoBehaviour
     {
         swearstate = true;
         text.text = "跳过";
-        joyTip.SetActive(Input.GetJoystickNames().Length > 0);
         gameObject.SetActive(SaveData.Data.jumpPledge);
     }
     private void OnGame()
     {
         gameObject.SetActive(true);
         text.text = "下一次"; 
-        joyTip.SetActive(Input.GetJoystickNames().Length > 0);
         swearstate = false;
     }
     public void OnClickSelf()

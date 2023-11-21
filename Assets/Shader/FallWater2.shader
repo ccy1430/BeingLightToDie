@@ -6,7 +6,7 @@
 		_FallSpeed("FallSpeed",Float) = 2
 		_BaseColor("BaseColor",Color) = (0,0,0,0)
 		_DeepColor("DeepColor",Color) = (0,0,1,1)
-		_Seed("Seed",Float) = 1.56
+		_Size("OutLineSize",float) = 2
 	}
 		SubShader
 		{
@@ -33,20 +33,23 @@
 				{
 					float4 vertex : POSITION;
 					float2 uv : TEXCOORD0;
+					float4 color : COLOR;
 				};
 
 				struct v2f
 				{
 					float2 uv : TEXCOORD0;
 					float4 vertex : SV_POSITION;
+					float4 color : COLOR;
 				};
 
 				sampler2D _MainTex;
 				float4 _MainTex_ST;
+				float4 _MainTex_TexelSize;
 				float _FallSpeed;
 				fixed4 _BaseColor;
 				fixed4 _DeepColor;
-				float _Seed;
+				float _Size;
 
 
 				float random(float val)
@@ -124,23 +127,49 @@
 					v2f o;
 					o.vertex = UnityObjectToClipPos(v.vertex);
 					o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+					o.color = v.color;
 					return o;
+				}
+				
+				fixed SampleAlpha(int pIndex, v2f i)
+				{
+					const fixed sinArray[12] = { 0, 0.5, 0.866, 1, 0.866, 0.5, 0, -0.5, -0.866, -1, -0.866, -0.5 };
+					const fixed cosArray[12] = { 1, 0.866, 0.5, 0, -0.5, -0.866, -1, -0.866, -0.5, 0, 0.5, 0.866 };
+					float2 pos = i.uv +  _MainTex_TexelSize.xy *float2(cosArray[pIndex], sinArray[pIndex])*_Size;
+					return tex2D(_MainTex, pos).a;
 				}
 
 				fixed4 frag(v2f i) : SV_Target
 				{
 					float2 uv = i.uv;
 					//uv.y *= 2;
-					uv.x += _Time.y * _FallSpeed;
-					float uvnoise = perlinNoise(uv * 2);
+					uv.y += _Time.y * _FallSpeed;
+					float uvnoise = perlinNoise(uv * 2)/2 + 0.5;
+					//uvnoise *= 1-2*abs(i.uv.x-0.5);
+					//uvnoise *= (1-4*(i.uv.x-0.5)*(i.uv.x-0.5));
 					//uvnoise = sin(uvnoise * 1.57);
 					//uvnoise = (uvnoise + 1) / 2;
-					fixed4 col = lerp(_BaseColor, _DeepColor,uvnoise);
+					fixed4 col = lerp(_BaseColor, _DeepColor, uvnoise);
 					//uv.y /= 2;
 					//float dis = worleyNoise(uv);
 					//col.a *= dis;
 					//col.a = 3 * col.a * (1 - col.a) + col.a * col.a;
-					col.a *= tex2D(_MainTex, i.uv).a;
+					float sum = 0;
+					sum+=SampleAlpha(0, i);
+					sum+=SampleAlpha(1, i);
+					sum+=SampleAlpha(2, i);
+					sum+=SampleAlpha(3, i);
+					sum+=SampleAlpha(4, i);
+					sum+=SampleAlpha(5, i);
+					sum+=SampleAlpha(6, i);
+					sum+=SampleAlpha(7, i);
+					sum+=SampleAlpha(8, i);
+					sum+=SampleAlpha(9, i);
+					sum+=SampleAlpha(10, i);
+					sum+=SampleAlpha(11, i);
+
+					col.a *= max(sum/12,tex2D(_MainTex, i.uv).a);
+					col.a*= i.color.a;
 					return col;
 				}
 				ENDCG

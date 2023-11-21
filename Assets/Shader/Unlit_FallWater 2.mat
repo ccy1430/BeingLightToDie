@@ -26,11 +26,11 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _FallSpeed: 0.2
+    - _FallSpeed: 0.5
     - _Seed: 1
     m_Colors:
     - _BackColor: {r: 0.5137255, g: 0.8784314, b: 1, a: 1}
-    - _BaseColor: {r: 0.4056604, g: 0.4056604, b: 0.4056604, a: 1}
+    - _BaseColor: {r: 0.5137255, g: 0.8784314, b: 1, a: 1}
     - _DeepColor: {r: 0.5137255, g: 0.8784314, b: 1, a: 0.5019608}
-    - _LandColor: {r: 0.40392157, g: 0.40392157, b: 0.40392157, a: 1}
+    - _LandColor: {r: 0, g: 0.100815535, b: 1, a: 1}
   m_BuildTextureStacks: []
