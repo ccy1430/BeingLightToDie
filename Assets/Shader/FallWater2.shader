@@ -7,6 +7,7 @@
 		_BaseColor("BaseColor",Color) = (0,0,0,0)
 		_DeepColor("DeepColor",Color) = (0,0,1,1)
 		_Size("OutLineSize",float) = 2
+		[Toggle(OUTLINE)] _UseOutline ("UseOutline", Float) = 0
 	}
 		SubShader
 		{
@@ -15,6 +16,7 @@
 				"RenderType" = "Transparent"
 				"Queue" = "Transparent"
 			}
+
 
 			Cull Off
 			Lighting Off
@@ -26,6 +28,7 @@
 				CGPROGRAM
 				#pragma vertex vert
 				#pragma fragment frag
+				#pragma multi_compile _ OUTLINE
 
 				#include "UnityCG.cginc"
 
@@ -33,12 +36,16 @@
 				{
 					float4 vertex : POSITION;
 					float2 uv : TEXCOORD0;
+					float2 uv2 : TEXCOORD1;
+					float2 uv3 : TEXCOORD2;
 					float4 color : COLOR;
 				};
 
 				struct v2f
 				{
 					float2 uv : TEXCOORD0;
+					float2 uv2 : TEXCOORD1;
+					float2 uv3 : TEXCOORD2;
 					float4 vertex : SV_POSITION;
 					float4 color : COLOR;
 				};
@@ -50,7 +57,7 @@
 				fixed4 _BaseColor;
 				fixed4 _DeepColor;
 				float _Size;
-
+				fixed4 _TextureSampleAdd;
 
 				float random(float val)
 				{
@@ -127,16 +134,24 @@
 					v2f o;
 					o.vertex = UnityObjectToClipPos(v.vertex);
 					o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+					o.uv2 = v.uv2;
+					o.uv3 = v.uv3;
 					o.color = v.color;
 					return o;
 				}
 				
+				fixed IsInRect(float2 pPos, float2 pClipRectXY, float2 pClipRectZW)
+				{
+				    pPos = step(pClipRectXY, pPos) * step(pPos, pClipRectZW);
+				    return pPos.x * pPos.y;
+				}
+
 				fixed SampleAlpha(int pIndex, v2f i)
 				{
 					const fixed sinArray[12] = { 0, 0.5, 0.866, 1, 0.866, 0.5, 0, -0.5, -0.866, -1, -0.866, -0.5 };
 					const fixed cosArray[12] = { 1, 0.866, 0.5, 0, -0.5, -0.866, -1, -0.866, -0.5, 0, 0.5, 0.866 };
 					float2 pos = i.uv +  _MainTex_TexelSize.xy *float2(cosArray[pIndex], sinArray[pIndex])*_Size;
-					return tex2D(_MainTex, pos).a;
+					return step(i.uv2.x, pos.x) * step(i.uv2.y, pos.y) * step(pos.x, i.uv3.x) * step(pos.y , i.uv3.y) * tex2D(_MainTex, pos).a;
 				}
 
 				fixed4 frag(v2f i) : SV_Target
@@ -154,6 +169,7 @@
 					//float dis = worleyNoise(uv);
 					//col.a *= dis;
 					//col.a = 3 * col.a * (1 - col.a) + col.a * col.a;
+				#if OUTLINE
 					float sum = 0;
 					sum+=SampleAlpha(0, i);
 					sum+=SampleAlpha(1, i);
@@ -167,8 +183,10 @@
 					sum+=SampleAlpha(9, i);
 					sum+=SampleAlpha(10, i);
 					sum+=SampleAlpha(11, i);
-
-					col.a *= max(sum/12,tex2D(_MainTex, i.uv).a);
+					col.a *= max(sum/12,tex2D(_MainTex, i.uv).a)*step(i.uv2.x, i.uv.x) * step(i.uv2.y, i.uv.y) * step(i.uv.x, i.uv3.x) * step(i.uv.y , i.uv3.y);
+				#else
+					col.a *=tex2D(_MainTex, i.uv).a;
+				#endif
 					col.a*= i.color.a;
 					return col;
 				}

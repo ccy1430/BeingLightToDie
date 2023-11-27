@@ -8,9 +8,11 @@ public class Level_Swear_Pledge : MonoBehaviour
     private const float rectH = GameConfig.mapHeight / 2f - 1;
     private const float baseSpeed = 10;
 
-    public Transform body;
+    public SpriteRenderer bodySprr;
     public Transform maskTrs;
     public GameObject hurtPrefab;
+    public Sprite bodyCN;
+    public Sprite bodyEN;
 
     private void Awake()
     {
@@ -40,6 +42,7 @@ public class Level_Swear_Pledge : MonoBehaviour
         MaskSize();
         selfLightSize = 0;
         StartCoroutine(GenericTools.DelayFun_Cor(0.5f, SelfLight, null));
+        bodySprr.sprite = UI_Language.GameLanguage == "CN" ? bodyCN : bodyEN;
     }
 
     public float moveSpeed = 10;
@@ -97,7 +100,7 @@ public class Level_Swear_Pledge : MonoBehaviour
     public void CollEmo(Level_Swear_Emotion emo)
     {
         Debug.Log("coll emo :" + emo.selfIndex);
-
+        //失败了 没用的 做不到 放弃吧
         float originProgress = Progress;
         Progress -= 5;
         switch (emo.selfIndex)
@@ -138,6 +141,7 @@ public class Level_Swear_Pledge : MonoBehaviour
         MaskSize();
 
         emo.BackPool();
+        AudioManager.Instance.PlayAudio("break");
     }
     private void SplitEmoAndSelf(Level_Swear_Emotion emo, float subSize)
     {
@@ -147,10 +151,9 @@ public class Level_Swear_Pledge : MonoBehaviour
         go.transform.parent = transform.parent;
 
         subSize = subSize * (maskMaxSize - 0.7f) / 100;
-        var bodysprr = body.GetComponent<SpriteRenderer>();
         Vector2 size = new Vector2(subSize, emo.sprr.sprite.texture.height / 100f);
         Vector2 center = transform.position + Vector3.right * (maskTrs.localScale.x / 2 - subSize / 2);
-        var go2 = SpriteExploder.GenerateTriangularPieces(bodysprr, new Rect(center - size / 2, size), Color.white);
+        var go2 = SpriteExploder.GenerateTriangularPieces(bodySprr, new Rect(center - size / 2, size), Color.white);
         go2.transform.parent = transform.parent;
 
         var centerPos = emo.transform.position;
@@ -197,7 +200,7 @@ public class Level_Swear_Pledge : MonoBehaviour
     {
         float scaleX = selfLightSize + (Progress * (maskMaxSize - 0.7f)) / 100;
         maskTrs.localScale = new Vector3(scaleX, 1, 1);
-        body.localPosition = new Vector3(maskMaxSize / 2 - scaleX / 2, 0, 0);
+        bodySprr.transform.localPosition = new Vector3(maskMaxSize / 2 - scaleX / 2, 0, 0);
     }
 
     //private void OnDisable()

@@ -311,6 +311,7 @@ public enum GenericSign
     loadFlower,
 
     uiInterfaceChange,
+    updateLanguage,
 }
 public class GenericPool<T>
 {

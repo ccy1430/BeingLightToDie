@@ -9,7 +9,8 @@ public class Level_Swear_Emotion : MonoBehaviour
     
 
     public SpriteRenderer sprr;
-    public Sprite[] sprites;
+    public Sprite[] sprites_CN;
+    public Sprite[] sprites_EN;
     public float speedAcce;
 
     private Level_Swear_Pledge pledge;
@@ -34,8 +35,8 @@ public class Level_Swear_Emotion : MonoBehaviour
     private void Init()
     {
         moveSpeed = 1;
-        selfIndex = Random.Range(0, sprites.Length);
-        sprr.sprite = sprites[selfIndex];
+        selfIndex = Random.Range(0, sprites_CN.Length);
+        sprr.sprite = UI_Language.GameLanguage == "CN" ? sprites_CN[selfIndex] : sprites_EN[selfIndex];
         //随机取一个角度 形成射线 反算轨迹
         var angle = Random.Range(-30, 90);
         transform.localRotation = Quaternion.Euler(0, 0, angle > 30 ? angle - 60 : angle);

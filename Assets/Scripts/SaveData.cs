@@ -78,7 +78,7 @@ public class SaveDataPart
     //version 1
     public int levelIndex = 0;
     public float bgmVolume = 1;
-    public float audVolume = 1;
+    public float audVolume = 0.6f;
     public float playerLightSize = 1;
     public int rememerCount = 16;
     public bool hadHurt = true;

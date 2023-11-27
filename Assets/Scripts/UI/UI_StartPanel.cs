@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UI_Start : MonoBehaviour
+public class UI_StartPanel : UI_LanguageText
 {
-    public GameObject chooselevel;
-    private void OnEnable()
+    public GameObject chooselevelBtn;
+    protected override void OnEnable()
     {
         bool hadChooseLevel = SaveData.Data.hadChooseLevel;
-        chooselevel.SetActive(hadChooseLevel);
-        var btn = chooselevel.GetComponent<Button>();
+        chooselevelBtn.SetActive(hadChooseLevel);
+        var btn = chooselevelBtn.GetComponent<Button>();
         if (hadChooseLevel)
         {
             
@@ -37,5 +37,17 @@ public class UI_Start : MonoBehaviour
             downNavigation.selectOnUp = upSeclect;
             downSeclect.navigation = downNavigation;
         }
+
+        if(SaveData.Data.levelIndex == 0)
+        {
+            textCN = "开始游戏";
+            textEN = "Start";
+        }
+        else
+        {
+            textCN = "继续游戏";
+            textEN = "Contiune";
+        }
+        base .OnEnable();
     }
 }

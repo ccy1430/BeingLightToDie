@@ -27,6 +27,21 @@ public class UI_IntoLevel : MonoBehaviour
         int[] needCounts = new int[7];
         int[] endCounts = new int[7] { 4, 3, 0, 2, 2, 0, 3 };
         float stepTimer = 0.02f;
+        System.Func<string> CreatText;
+        if (UI_Language.GameLanguage == "CN")
+        {
+            CreatText = () =>
+            {
+                return $"{needCounts[0]}月{needCounts[1]}{needCounts[2]}日  {needCounts[3]}{needCounts[4]}：{needCounts[5]}{needCounts[6]}  大雨";
+            };
+        }
+        else
+        {
+            CreatText = () =>
+            {
+                return $"{needCounts[0]}/{needCounts[1]}{needCounts[2]}  {needCounts[3]}{needCounts[4]}：{needCounts[5]}{needCounts[6]}  RAIN";
+            };
+        }
         while (timer < 0.7f)
         {
             for (int i = 0; i < 7; i++)
@@ -46,7 +61,7 @@ public class UI_IntoLevel : MonoBehaviour
                     needCounts[i] = noRepeatRand;
                 }
             }
-            text.text = $"{needCounts[0]}月{needCounts[1]}{needCounts[2]}日  {needCounts[3]}{needCounts[4]}：{needCounts[5]}{needCounts[6]}  大雨";
+            text.text = CreatText();
             yield return new WaitForSeconds(stepTimer);
             timer += stepTimer;
         }

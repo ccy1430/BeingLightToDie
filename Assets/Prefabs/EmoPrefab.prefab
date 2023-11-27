@@ -125,10 +125,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sprr: {fileID: 8735754726396875538}
-  sprites:
+  sprites_CN:
   - {fileID: 21300000, guid: ca52226db003d26478c31b036e88c536, type: 3}
   - {fileID: 21300000, guid: b7ef05c8021131e4882c59b9d92859b0, type: 3}
   - {fileID: 21300000, guid: bcb8d3857c4a18d40923f97862ed2133, type: 3}
   - {fileID: 21300000, guid: b1725edbeca2dd046ba6fb29776c77b9, type: 3}
+  sprites_EN:
+  - {fileID: 21300000, guid: 9c38de307c8366044ab44872b9cf9b97, type: 3}
+  - {fileID: 21300000, guid: 2c36a5e1d506cbb4ab86991988de5ff5, type: 3}
+  - {fileID: 21300000, guid: 1933ef4bdcfc3a94f8e108758149f95b, type: 3}
+  - {fileID: 21300000, guid: cf52b51005ddabd4da991987400f115f, type: 3}
   speedAcce: 4
   selfIndex: 0

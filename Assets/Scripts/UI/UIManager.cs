@@ -16,9 +16,9 @@ public class UIManager : MonoBehaviour
     {
         0,11,22,33,48,57,83,100,109,121,122
     };
-    private readonly string[] levelwords =
+    private readonly string[] words_CN =
     {
-        "不！\n不……不…不该是这样的，为什么……\n不，不该是你!\n我…我能回到过去，我会改变这一切！\n我们的故事，一定是有一个好结局的。\n好，等着我哦。\n我发誓，我会拯救你。",
+        "不！\n不……不…不该是这样的，为什么……\n不，不该是你!\n我…我能回到过去，我会改变这一切！\n我们的故事，一定是有一个好结局的。\n好，等着我。\n我发誓，我会拯救你。",
         "为什么，我总是犯下这么多错误……对不起……\n再给我一些机会……\n我一定会……一定会拯救你。",
         "为什么！为什么？为什么……\n我已经规避了无数错误……为什么……\n还要给予我这样的结局……\n……\n……\n再来一次！",
         "我……\n我走过了这么多路……这么多颜色的路。\n你……\n你会理解我吗？……",
@@ -39,6 +39,44 @@ public class UIManager : MonoBehaviour
             "<color=#FFC0CB>\"但是别偷懒哦。终究你是要面对未来的。来，擦擦眼泪。\"</color>",
     };
 
+    private readonly string[] words_EN =
+    {
+        "NO！\nNo……no…it's wrong，why……\nNo，don't be you!\nI…I can go back in time and I'll change everything！\nOur story must have a good ending.\nWait for me. \nI swear, I will save you.",
+        "Why, I always make so many mistakes…… I'm sorry… \nGive me one more chance…… \nI will definitely…Will save you.",
+        "WHY！WHY？Why……\nI've avoided a million mistakes……Why……\nWhy……And give me such an end...\n……\n……\nOnce more！",
+        "I……\nI've come so far……so many choices.\nYou……\nWill you forgive me?……",
+        "Failed,loser.\nThe loser who failed. The loser failed。\nFailure, failure, failure, failure, failure.\nThe words are dividing……\nThe mother of success……",
+        "It's fucking worth it。\nI'll throw away everything of me.",
+        "To take one more step, not to go back in time, is to get out of the cycle……",
+        "Just give you up……\n……\nBut what am I?",
+        "I am a loser, a avoider, a incompetent.\nA sad person, a mantis arm that does not support itself, a stone in the river. \nA clown, a trapped animal in a cycle, a person who is ashamed of the oath. \nA person who deserve to die.\nA desperate person……",
+        "I'm sorry.",
+        "This, what, why?\n" +
+            "<color=#FFC0CB>\"Don't be sad, you know it was my choice.\"</color>\n" +
+            "No…no…\n" +
+            "<color=#FFC0CB>\"I'm so lucky to have you with me, don't cry, I'm just in a different shape.\"</color>\n" +
+            "But I'll never see you again……\n" +
+            "<color=#FFC0CB>\"I'll be watching you and we'll meet again. Now please go past me and return to yourself.\"</color>\n" +
+            "I……I can't. I can't.\n" +
+            "<color=#FFC0CB>\"It's okay, you can do it. If you're too tired right now, it's okay to take a break.\"</color>\n" +
+            "<color=#FFC0CB>\"But don't be lazy. Eventually, you have to face the future. Here, wipe your tears.\"</color>",
+    };
+    private string[] levelwords;
+
+    protected virtual void OnEnable()
+    {
+        SetText();
+        GenericMsg.AddReceiver(GenericSign.updateLanguage, SetText);
+    }
+    protected virtual void OnDestroy()
+    {
+        GenericMsg.DelReceiver(GenericSign.updateLanguage, SetText);
+    }
+    private void SetText()
+    {
+        levelwords = UI_Language.GameLanguage == "EN" ? words_EN : words_CN;
+    }
+
     private void Start()
     {
         t_levelword.text = "";
@@ -46,8 +84,6 @@ public class UIManager : MonoBehaviour
         panel_set.gameObject.SetActive(false);
         panel_choose.gameObject.SetActive(false);
         panel_ingame.gameObject.SetActive(false);
-        //todo 返回主菜单时也有这个
-        startGameBtnText.text = SaveData.Data.levelIndex == 0 ? "开始游戏" : "继续游戏";
 
         GenericTools.DelayFun(2f, f => allUIAphla.alpha = f, null);
     }
@@ -93,7 +129,6 @@ public class UIManager : MonoBehaviour
     public GameObject panel_set;
     public GameObject panel_choose;
     public GameObject panel_ingame;
-    public Text startGameBtnText;
     public void Click_StartGame()
     {
         if (SaveData.Data.levelIndex == 0)
